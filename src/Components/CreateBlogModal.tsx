@@ -1,4 +1,11 @@
 import React, { useState } from "react";
+import { X } from "lucide-react";
+import BlogEditor from "./BlogEditor";
+import { db } from "../firebase/firebase";
+import { collection, doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
+
+
 
 type Props = {
   isOpen: boolean;
@@ -8,51 +15,100 @@ type Props = {
 function CreateBlogModal({ isOpen, onClose }: Props) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [image, setImage] = useState<File | null>(null);
+  const auth = getAuth();
+
 
   if (!isOpen) return null;
-  const handleSubmit = (
-    e: React.SyntheticEvent<HTMLFormElement, SubmitEvent>,
-  ) => {
+
+const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log({
-      title,
-      content,
-      image,
-    });
-    setTitle("");
-    setContent("");
-    setImage(null);
-    onClose();
-  };
+
+    try {
+        const blogRef = doc(collection(db, "blogs"));
+
+        await setDoc(blogRef, {
+            id: blogRef.id,
+            title,
+            description: content.slice(0, 150),
+            content,
+            author: auth.currentUser?.displayName ?? "Anonymous",
+            createdAt: serverTimestamp()
+        });
+        console.log(
+          
+          title,
+          content
+
+        )
+        setTitle("");
+        setContent("");
+
+        onClose();
+    } catch (error) {
+        console.error(error);
+    }
+};
+
   return (
-    <div className="modal-overlay">
-      <div className="modal">
-        <h2>Create Blog</h2>
-        <form onSubmit={handleSubmit}>
-          <input
-            type="text"
-            placeholder="Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-          <textarea
-            rows={8}
-            placeholder="Write your blog"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-          />
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setImage(e.target.files?.[0] ?? null)}
-          />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+      <div className="flex h-[82vh] w-full max-w-5xl flex-col overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-2xl">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b px-6 py-4">
           <div>
-            <button type="submit">Publish</button>
-            <button type="button" onClick={onClose}>
-              {" "}
+            <h2 className="text-xl font-semibold text-gray-800">
+              Create New Story
+            </h2>
+
+            <p className="mt-0.5 text-sm text-gray-500">
+              Share your ideas with the community.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-lg border border-gray-300 px-4 py-2 text-sm hover:bg-gray-100"
+            >
               Cancel
             </button>
+
+            <button
+              type="submit"
+              form="blogForm"
+              className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            >
+              Publish
+            </button>
+
+            <button
+              onClick={onClose}
+              className="rounded-lg p-2 hover:bg-gray-100"
+            >
+              <X size={20} />
+            </button>
+          </div>
+        </div>
+
+        <form
+          id="blogForm"
+          onSubmit={handleSubmit}
+          className="flex-1 overflow-y-auto px-6 py-5"
+        >
+          {/* Title */}
+
+          <input
+            type="text"
+            placeholder="Enter your blog title..."
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="w-full border-none text-4xl font-bold tracking-tight placeholder:text-gray-300 focus:outline-none"
+          />
+
+          {/* Editor */}
+
+          <div className="mt-6">
+            <BlogEditor value={content} onChange={setContent} />
           </div>
         </form>
       </div>

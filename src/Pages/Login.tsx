@@ -1,24 +1,142 @@
-import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
-import { auth } from "../firebase/firebase";
-import { useNavigate } from "react-router-dom";
 
-const provider = new GoogleAuthProvider();
+import { Link, useNavigate } from "react-router-dom";
+import { FcGoogle } from "react-icons/fc";
+import { FaBookOpen } from "react-icons/fa";
+import { login, loginWithGoogle } from "../services/authService";
+import { useState } from "react";
 
 function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const login = async () => {
+  const handleLogin = async () => {
     try {
-      await signInWithPopup(auth, provider);
+      await login(email, password);
       navigate("/");
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
+      alert(error.message);
+    }
+  };
+  const handleGoogleLogin = async () => {
+    try {
+      await loginWithGoogle();
+      navigate("/");
+    } catch (error: any) {
+      console.error(error);
+      alert(error.message);
     }
   };
 
   return (
-    <div>
-      <button onClick={login}>Login with Google</button>
+    <div className="min-h-screen bg-[#F8F6F2] flex items-center justify-center px-6">
+      <div className="w-full max-w-[420px] rounded-3xl border border-gray-200 bg-gradient-to-b from-white to-slate-50 shadow-[0_15px_40px_rgba(0,0,0,0.08)] px-10 py-9">
+        {/* Logo */}
+        <div className="flex flex-col items-center">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100">
+              <FaBookOpen className="text-xl text-blue-600" />
+            </div>
+
+            <h1 className="text-4xl font-bold tracking-tight text-gray-800">
+              Read<span className="text-blue-600">One</span>
+            </h1>
+          </div>
+
+          <p className="mt-4 text-sm text-gray-500">Read • Write • Inspire</p>
+        </div>
+
+        {/* Heading */}
+        <div className="mt-10 text-center">
+          <h2 className="text-2xl font-semibold text-gray-800">Welcome Back</h2>
+
+          <p className="mt-2 text-sm text-gray-500">
+            Sign in to continue your journey.
+          </p>
+        </div>
+
+        {/* Form */}
+        <div className="mt-9 space-y-5">
+          {/* Email */}
+          <div>
+            <label className="mb-2 block text-sm font-medium text-gray-700">
+              Email
+            </label>
+
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              className="..."
+            />
+
+            {/* Password */}
+            <div>
+              <div className="mb-2 flex items-center justify-between">
+                <label className="text-sm font-medium text-gray-700">
+                  Password
+                </label>
+
+                <button
+                  type="button"
+                  className="text-xs font-medium text-blue-600 hover:underline"
+                >
+                  Forgot password?
+                </button>
+              </div>
+
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="..."
+              />
+
+              {/* Login */}
+              <button
+                onClick={handleLogin}
+                className="mt-2 h-11 w-full rounded-xl bg-blue-600 text-sm font-semibold text-white transition hover:bg-blue-700 active:scale-[0.99]"
+              >
+                Login
+              </button>
+            </div>
+
+            {/* Divider */}
+            <div className="my-8 flex items-center">
+              <div className="h-px flex-1 bg-gray-200"></div>
+
+              <span className="mx-4 text-xs font-medium uppercase tracking-[0.2em] text-gray-400">
+                OR
+              </span>
+
+              <div className="h-px flex-1 bg-gray-200"></div>
+            </div>
+
+            {/* Google Login */}
+            <button
+              onClick={handleGoogleLogin}
+              className="flex h-11 w-full items-center justify-center gap-3 rounded-xl border border-gray-300 bg-white text-sm font-medium text-gray-700 transition hover:border-gray-400 hover:bg-gray-50"
+            >
+              <FcGoogle size={20} />
+              Continue with Google
+            </button>
+
+            {/* Footer */}
+            <p className="mt-8 text-center text-sm text-gray-500">
+              Don't have an account?{" "}
+              <Link
+                to="/signup"
+                className="font-semibold text-blue-600 hover:underline"
+              >
+                Sign Up
+              </Link>
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
