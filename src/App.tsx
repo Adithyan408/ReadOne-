@@ -1,18 +1,36 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import "./App.css";
-import Home from "./Components/Home";
-import Blog from "./Components/Blog";
-import Login from "./Components/Login";
+import Home from "./Pages/Home";
+import Blog from "./Pages/BlogDetails";
+import ProtectedRoute from "./Components/ProtectedRoute";
+import Login from "./Pages/Login";
+import Navbar from "./Components/Navbar";
+import CreateBlogModal from "./Components/CreateBlogModal";
+import { useState } from "react";
 
 function App() {
-  return(
-  <BrowserRouter>
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/blog/:id" element={<Blog />}/>
-    </Routes>
-  </BrowserRouter>
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  return (
+    <>
+      <Navbar onCreate={() => setIsModalOpen(true)} />
+
+      <CreateBlogModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route
+          path="/blog/:id"
+          element={
+            <ProtectedRoute>
+              <Blog />
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
+    </>
   );
 }
 
