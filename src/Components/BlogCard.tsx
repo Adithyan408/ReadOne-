@@ -1,5 +1,7 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import type { Blog } from "../types/Blog";
+import { useAuth } from "../hooks/useAuth";
+import { useState } from "react";
 
 type Props = {
   blog: Blog;
@@ -26,10 +28,59 @@ const formatPublishedDate = (createdAt: any) => {
 };
 
 function BlogCard({ blog }: Props) {
+  const { user, loading } = useAuth()
+  const navigate = useNavigate();
   const plainText = blog.description.replace(/<[^>]*>/g, "");
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (loading) {
+      return <p>Loading...</p>;
+    }
+    if (!user) {
+      setShowLoginModal(true);
+      return;
+    }
+
+    navigate(`/blog/${blog.id}`);
+  };
+  
   return (
+    <>
+    {showLoginModal && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+      <h2 className="text-xl font-bold text-gray-800">
+        Login Required
+      </h2>
+
+      <p className="mt-3 text-gray-600">
+        You need to log in to read the full article.
+      </p>
+
+      <div className="mt-6 flex justify-end gap-3">
+        <button
+          onClick={() => setShowLoginModal(false)}
+          className="rounded-lg border border-gray-300 px-4 py-2 hover:bg-gray-100"
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={() => navigate("/login")}
+          className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+        >
+          Login
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     <Link
       to={`/blog/${blog.id}`}
+      onClick={handleClick}
       className="group flex h-full w-full flex-col overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl"
     >
       {/* Content */}
@@ -53,6 +104,7 @@ function BlogCard({ blog }: Props) {
         </div>
       </div>
     </Link>
+    </>
   );
 }
 
