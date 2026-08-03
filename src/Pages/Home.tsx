@@ -42,33 +42,33 @@ function Home() {
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         {/* Background Blur */}
-        <div className="absolute left-1/2 top-0 -z-10 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-blue-100/50 blur-3xl"></div>
+        <div className="pointer-events-none absolute left-1/2 top-0 -z-10 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-blue-100/50 blur-3xl" />
 
-        <div className="mx-auto w-full max-w-[1200px] px-6 py-20 md:px-10 lg:px-14">
+        <div className="mx-auto w-full max-w-[1200px] px-6 py-24 sm:px-8 md:px-10 md:py-28 lg:px-14">
           <div className="flex flex-col items-center text-center">
-            <span className="rounded-full bg-blue-100 px-4 py-1 text-sm font-medium text-blue-700">
+            <span className="inline-block rounded-full bg-blue-100 px-4 py-1.5 text-sm font-medium text-blue-700">
               ✨ Welcome to ReadOne
             </span>
 
-            <h1 className="mt-6 max-w-4xl text-5xl font-extrabold leading-tight text-gray-900 md:text-6xl">
+            <h1 className="mt-8 max-w-4xl text-4xl font-extrabold leading-tight tracking-tight text-gray-900 sm:text-5xl md:text-6xl">
               Discover Stories that
               <span className="text-blue-600"> Inspire</span>
             </h1>
 
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-gray-600">
+            <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-gray-600 sm:text-lg sm:leading-8">
               Read insightful articles, publish your own ideas, and connect with
               a community of passionate writers from around the world.
             </p>
 
             {/* Search */}
-            <div className="mt-10 w-full max-w-xl">
-              <div className="flex items-center rounded-2xl border border-gray-200 bg-white px-5 py-3 shadow-sm transition focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100">
-                <Search size={20} className="text-gray-400" />
+            <div className="mt-12 w-full max-w-xl px-2 sm:px-0">
+              <div className="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white px-5 py-3.5 shadow-sm transition focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100">
+                <Search size={20} className="shrink-0 text-gray-400" />
 
                 <input
                   type="text"
                   placeholder="Search blogs..."
-                  className="ml-3 w-full bg-transparent text-gray-700 outline-none placeholder:text-gray-400"
+                  className="w-full bg-transparent text-gray-700 outline-none placeholder:text-gray-400"
                 />
               </div>
             </div>
@@ -77,23 +77,25 @@ function Home() {
       </section>
 
       {/* Latest Stories */}
-      <section className="mx-auto w-full max-w-[1200px] px-6 pb-20 md:px-10 lg:px-14">
-        <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <section className="mx-auto w-full max-w-[1200px] px-6 pb-24 sm:px-8 md:px-10 md:pb-28 lg:px-14">
+        <div className="mb-12 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h2 className="text-3xl font-bold text-gray-800">Latest Stories</h2>
+            <h2 className="text-2xl font-bold text-gray-800 sm:text-3xl">
+              Latest Stories
+            </h2>
 
             <p className="mt-2 text-gray-500">
               Explore what our community is writing today.
             </p>
           </div>
 
-          <button className="rounded-xl border border-gray-300 bg-white px-5 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100">
+          <button className="self-start rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-100 sm:self-auto">
             View All
           </button>
         </div>
 
         {/* Blog Grid */}
-        <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-x-8 gap-y-10 md:grid-cols-2 xl:grid-cols-3">
           {blogs.map((blog) => (
             <BlogCard key={blog.id} blog={blog} />
           ))}

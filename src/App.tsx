@@ -1,12 +1,13 @@
 import { Route, Routes } from "react-router-dom";
 import Home from "./Pages/Home";
-import Blog from "./Pages/BlogDetails";
+// import Blog from "./Pages/BlogDetails";
 import ProtectedRoute from "./Components/ProtectedRoute";
 import Login from "./Pages/Login";
 import Navbar from "./Components/Navbar";
 import CreateBlogModal from "./Components/CreateBlogModal";
 import { useState } from "react";
 import Signup from "./Pages/Signup";
+import BlogDetails from "./Pages/BlogDetails";
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -26,7 +27,7 @@ function App() {
           path="/blog/:id"
           element={
             <ProtectedRoute>
-              <Blog />
+              <BlogDetails />
             </ProtectedRoute>
           }
         />
