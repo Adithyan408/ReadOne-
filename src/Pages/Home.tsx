@@ -5,12 +5,10 @@ import { db } from "../firebase/firebase";
 
 import { useEffect, useState } from "react";
 import type { Blog } from "../types/Blog";
-import { useAuth } from "../hooks/useAuth";
 
 function Home() {
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
-  const {user} = useAuth()
 
 
   useEffect(() => {
