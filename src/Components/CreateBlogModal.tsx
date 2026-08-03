@@ -1,54 +1,73 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import BlogEditor from "./BlogEditor";
 import { db } from "../firebase/firebase";
-import { collection, doc, setDoc, serverTimestamp } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  setDoc,
+  serverTimestamp,
+  updateDoc,
+} from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-
-
+import type { Blog } from "../types/Blog";
 
 type Props = {
   isOpen: boolean;
   onClose: () => void;
+  mode: "create" | "edit";
+  blog?: Blog;
 };
 
-function CreateBlogModal({ isOpen, onClose }: Props) {
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
+function CreateBlogModal({ isOpen, onClose, mode, blog }: Props) {
+  const [title, setTitle] = useState(blog?.title ?? "");
+  const [content, setContent] = useState(blog?.content ?? "");
   const auth = getAuth();
 
+  useEffect(() => {
+    if (mode === "edit" && blog) {
+      setTitle(blog.title);
+      setContent(blog.content);
+    }
+
+    if (mode === "create") {
+      setTitle("");
+      setContent("");
+    }
+  }, [mode, blog]);
 
   if (!isOpen) return null;
 
-const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     try {
+      if (mode === "create") {
         const blogRef = doc(collection(db, "blogs"));
 
         await setDoc(blogRef, {
-            id: blogRef.id,
-            title,
-            description: content.slice(0, 150),
-            content,
-            author: auth.currentUser?.displayName ?? "Anonymous",
-            createdAt: serverTimestamp()
-        });
-        console.log(
-          
+          id: blogRef.id,
           title,
-          content
+          description: content.slice(0, 150),
+          content,
+          userId: auth.currentUser?.uid,
+          author: auth.currentUser?.displayName ?? "Anonymous",
+          createdAt: serverTimestamp(),
+        });
+      } else if (mode === "edit" && blog) {
+        await updateDoc(doc(db, "blogs", blog.id), {
+          title,
+          description: content.slice(0, 150),
+          content,
+          updatedAt: serverTimestamp(),
+        });
+      }
 
-        )
-        setTitle("");
-        setContent("");
-
-        onClose();
+      onClose();
     } catch (error) {
-        console.error(error);
+      console.error(error);
     }
-};
-
+  };
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
       <div className="flex h-[82vh] w-full max-w-5xl flex-col overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-2xl">
@@ -56,11 +75,13 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         <div className="flex items-center justify-between border-b px-6 py-4">
           <div>
             <h2 className="text-xl font-semibold text-gray-800">
-              Create New Story
+              {mode === "create" ? "Create New Story" : "Edit Story"}
             </h2>
 
             <p className="mt-0.5 text-sm text-gray-500">
-              Share your ideas with the community.
+              {mode === "create"
+                ? "Share your ideas with the community."
+                : "Update your story."}
             </p>
           </div>
 
@@ -76,9 +97,9 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
             <button
               type="submit"
               form="blogForm"
-              className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-medium text-white"
             >
-              Publish
+              {mode === "create" ? "Publish" : "Save Changes"}
             </button>
 
             <button

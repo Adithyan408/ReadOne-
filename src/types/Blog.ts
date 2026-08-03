@@ -6,5 +6,6 @@ export interface Blog {
   description: string;
   content: string;
   author: string;
+  userId: string;
   createdAt: Timestamp;
 }

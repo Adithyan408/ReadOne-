@@ -18,6 +18,7 @@ function App() {
       <CreateBlogModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        mode="create"
       />
       <Routes>
         <Route path="/" element={<Home />} />
