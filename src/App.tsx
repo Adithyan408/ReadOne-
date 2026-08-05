@@ -1,6 +1,5 @@
 import { Route, Routes } from "react-router-dom";
 import Home from "./Pages/Home";
-// import Blog from "./Pages/BlogDetails";
 import ProtectedRoute from "./Components/ProtectedRoute";
 import Login from "./Pages/Login";
 import Navbar from "./Components/Navbar";

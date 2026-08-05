@@ -1,6 +1,6 @@
 import BlogCard from "../Components/BlogCard";
 import { Search } from "lucide-react";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 
 import { useEffect, useState } from "react";
@@ -10,25 +10,18 @@ function Home() {
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
 
-
   useEffect(() => {
-    const fetchBlogs = async () => {
-      try {
-        const snapshot = await getDocs(collection(db, "blogs"));
+    const unsubscribe = onSnapshot(collection(db, "blogs"), (snapshot) => {
+      const blogsData: Blog[] = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...(doc.data() as Omit<Blog, "id">),
+      }));
 
-        const blogsData: Blog[] = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...(doc.data() as Omit<Blog, "id">),
-        }));
+      setBlogs(blogsData);
+      setLoading(false);
+    });
 
-        setBlogs(blogsData);
-      } catch (error) {
-        console.error("Error fetching blogs:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchBlogs();
+    return () => unsubscribe();
   }, []);
 
   if (loading) {
@@ -63,7 +56,7 @@ function Home() {
             </p>
 
             {/* Search */}
-            <div className="mt-12 w-full max-w-xl px-2 sm:px-0">
+            {/* <div className="mt-12 w-full max-w-xl px-2 sm:px-0">
               <div className="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white px-5 py-3.5 shadow-sm transition focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100">
                 <Search size={20} className="shrink-0 text-gray-400" />
 
@@ -73,7 +66,7 @@ function Home() {
                   className="w-full bg-transparent text-gray-700 outline-none placeholder:text-gray-400"
                 />
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </section>

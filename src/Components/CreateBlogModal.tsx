@@ -11,6 +11,7 @@ import {
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import type { Blog } from "../types/Blog";
+import AlertModal from "./AlertModal";
 
 type Props = {
   isOpen: boolean;
@@ -22,7 +23,28 @@ type Props = {
 function CreateBlogModal({ isOpen, onClose, mode, blog }: Props) {
   const [title, setTitle] = useState(blog?.title ?? "");
   const [content, setContent] = useState(blog?.content ?? "");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [showErrorModal, setShowErrorModal] = useState(false);
   const auth = getAuth();
+
+  const validateBlog = () => {
+  const trimmedTitle = title.trim();
+  const plainText = content.replace(/<[^>]*>/g, "").trim();
+
+  if (!trimmedTitle) {
+    setErrorMessage("Blog title cannot be empty.");
+    setShowErrorModal(true);
+    return false;
+  }
+
+  if (!plainText) {
+    setErrorMessage("Blog content cannot be empty.");
+    setShowErrorModal(true);
+    return false;
+  }
+
+  return true;
+};
 
   useEffect(() => {
     if (mode === "edit" && blog) {
@@ -40,6 +62,8 @@ function CreateBlogModal({ isOpen, onClose, mode, blog }: Props) {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    if(!validateBlog()) return
 
     try {
       if (mode === "create") {
@@ -69,6 +93,12 @@ function CreateBlogModal({ isOpen, onClose, mode, blog }: Props) {
     }
   };
   return (
+    <>
+    <AlertModal
+        isOpen={showErrorModal}
+        message={errorMessage}
+        onClose={() => setShowErrorModal(false)}
+      />
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
       <div className="flex h-[82vh] w-full max-w-5xl flex-col overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-2xl">
         {/* Header */}
@@ -134,6 +164,7 @@ function CreateBlogModal({ isOpen, onClose, mode, blog }: Props) {
         </form>
       </div>
     </div>
+    </>
   );
 }
 

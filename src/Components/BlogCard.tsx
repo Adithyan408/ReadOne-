@@ -7,6 +7,7 @@ import { deleteDoc, doc } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import CreateBlogModal from "./CreateBlogModal";
 import DeleteConfirmationModal from "./deleteModal";
+import AlertModal from "./AlertModal";
 
 type Props = {
   blog: Blog;
@@ -43,6 +44,7 @@ function BlogCard({ blog }: Props) {
   const handleEdit = () => {
     setShowEditModal(true);
   };
+  
 
   const handleDelete = async (Bid: string) => {
     try {
@@ -82,6 +84,7 @@ function BlogCard({ blog }: Props) {
         onClose={() => setShowDeleteModal(false)}
         onConfirm={() => handleDelete(blog.id)}
       />
+      
       {showLoginModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
@@ -118,45 +121,45 @@ function BlogCard({ blog }: Props) {
         <div className="flex flex-1 flex-col p-6">
           {/* Header */}
           <div className="flex items-start justify-between gap-4">
-  <h2 className="line-clamp-2 flex-1 text-2xl font-bold leading-tight text-gray-800 transition-colors duration-300 group-hover:text-blue-600">
-    {blog.title}
-  </h2>
+            <h2 className="line-clamp-2 flex-1 text-2xl font-bold leading-tight text-gray-800 transition-colors duration-300 group-hover:text-blue-600">
+              {blog.title}
+            </h2>
 
-  {user ? (
-    user.uid === blog.userId ? (
-      <div className="flex items-center gap-1">
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleEdit();
-          }}
-          className="rounded-full p-2 text-blue-600 transition hover:bg-blue-100"
-          title="Edit blog"
-        >
-          <Pencil size={12} />
-        </button>
+            {user ? (
+              user.uid === blog.userId ? (
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleEdit();
+                    }}
+                    className="rounded-full p-2 text-blue-600 transition hover:bg-blue-100"
+                    title="Edit blog"
+                  >
+                    <Pencil size={12} />
+                  </button>
 
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setShowDeleteModal(true);
-          }}
-          className="rounded-full p-2 text-red-600 transition hover:bg-red-100"
-          title="Delete blog"
-        >
-          <Trash2 size={12} />
-        </button>
-      </div>
-    ) : (
-      <div className="flex items-center gap-1 text-xs text-gray-500">
-        <User size={12} />
-        <span className="truncate max-w-20">{blog.author}</span>
-      </div>
-    )
-  ) : null}
-</div>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setShowDeleteModal(true);
+                    }}
+                    className="rounded-full p-2 text-red-600 transition hover:bg-red-100"
+                    title="Delete blog"
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1 text-xs text-gray-500">
+                  <User size={12} />
+                  <span className="truncate max-w-20">{blog.author}</span>
+                </div>
+              )
+            ) : null}
+          </div>
 
           <p className="mt-4 line-clamp-3 flex-1 text-[15px] leading-7 text-gray-600">
             {plainText}
