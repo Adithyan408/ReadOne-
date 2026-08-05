@@ -1,15 +1,18 @@
 import { Route, Routes } from "react-router-dom";
-import Home from "./Pages/Home";
 import ProtectedRoute from "./Components/ProtectedRoute";
-import Login from "./Pages/Login";
 import Navbar from "./Components/Navbar";
 import CreateBlogModal from "./Components/CreateBlogModal";
 import { useState } from "react";
-import Signup from "./Pages/Signup";
-import BlogDetails from "./Pages/BlogDetails";
+import { lazy, Suspense } from "react";
+
+const Home = lazy(() => import("./Pages/Home"));
+const Login = lazy(() => import("./Pages/Login"));
+const Signup = lazy(() => import("./Pages/Signup"));
+const BlogDetails = lazy(() => import("./Pages/BlogDetails"));
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  
   return (
     <>
       <Navbar onCreate={() => setIsModalOpen(true)} />
@@ -19,19 +22,28 @@ function App() {
         onClose={() => setIsModalOpen(false)}
         mode="create"
       />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route
-          path="/blog/:id"
-          element={
-            <ProtectedRoute>
-              <BlogDetails />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
+      <Suspense
+        fallback={
+          <div className="flex min-h-screen items-center justify-center">
+            <p className="text-lg">Loading...</p>
+          </div>
+        }
+      >
+        <Routes>
+          <Route path="/" element={<Home onCreate={() => setIsModalOpen(true)}/>} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+
+          <Route
+            path="/blog/:id"
+            element={
+              <ProtectedRoute>
+                <BlogDetails />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </Suspense>
     </>
   );
 }

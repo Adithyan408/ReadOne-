@@ -17,7 +17,6 @@ import {
   Quote,
   Undo2,
   Redo2,
-  LinkIcon,
   Code,
   Minus,
 } from "lucide-react";
@@ -95,19 +94,7 @@ function BlogEditor({ value, onChange }: Props) {
 
   if (!editor) return null;
 
-  const setLink = () => {
-    const previousUrl = editor.getAttributes("link").href;
-    const url = window.prompt("URL", previousUrl || "");
-
-    if (url === null) return;
-
-    if (url === "") {
-      editor.chain().focus().extendMarkRange("link").unsetLink().run();
-      return;
-    }
-
-    editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
-  };
+  
 
   return (
     <div className="border rounded-2xl overflow-hidden">
@@ -137,7 +124,7 @@ function BlogEditor({ value, onChange }: Props) {
             editor.chain().focus().toggleHeading({ level: 1 }).run()
           }
         >
-          <Heading1 size={17} />
+          <Heading1 size={18} />
         </ToolbarButton>
         <ToolbarButton
           title="Heading 2"
@@ -155,7 +142,7 @@ function BlogEditor({ value, onChange }: Props) {
             editor.chain().focus().toggleHeading({ level: 3 }).run()
           }
         >
-          <Heading3 size={17} />
+          <Heading3 size={16} />
         </ToolbarButton>
 
         <Divider />
@@ -228,13 +215,7 @@ function BlogEditor({ value, onChange }: Props) {
 
         <Divider />
 
-        <ToolbarButton
-          title="Link"
-          active={editor.isActive("link")}
-          onClick={setLink}
-        >
-          <LinkIcon size={17} />
-        </ToolbarButton>
+        
       </div>
 
       {/* Editor body */}

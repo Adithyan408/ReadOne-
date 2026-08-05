@@ -1,14 +1,19 @@
 import BlogCard from "../Components/BlogCard";
-import { Search } from "lucide-react";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase/firebase";
+import { BookOpen } from "lucide-react";
 
 import { useEffect, useState } from "react";
 import type { Blog } from "../types/Blog";
-
-function Home() {
+import { useAuth } from "../hooks/useAuth";
+type Props = {
+  onCreate: () => void;
+};
+function Home({ onCreate }: Props) {
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const { user } = useAuth();
 
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, "blogs"), (snapshot) => {
@@ -54,37 +59,64 @@ function Home() {
               Read insightful articles, publish your own ideas, and connect with
               a community of passionate writers from around the world.
             </p>
-
-           
           </div>
         </div>
       </section>
 
       {/* Latest Stories */}
-      <section className="mx-auto w-full max-w-[1200px] px-6 pb-24 sm:px-8 md:px-10 md:pb-28 lg:px-14">
-        <div className="mb-12 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-800 sm:text-3xl">
-              Latest Stories
-            </h2>
+      {blogs.length > 0 ? (
+        <section className="mx-auto w-full max-w-[1200px] px-6 pb-24 sm:px-8 md:px-10 md:pb-28 lg:px-14">
+          <div className="mb-12 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-800 sm:text-3xl">
+                Latest Stories
+              </h2>
 
-            <p className="mt-2 text-gray-500">
-              Explore what our community is writing today.
-            </p>
+              <p className="mt-2 text-gray-500">
+                Explore what our community is writing today.
+              </p>
+            </div>
+
+            <button className="self-start rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-100 sm:self-auto">
+              View All
+            </button>
           </div>
 
-          <button className="self-start rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-100 sm:self-auto">
-            View All
-          </button>
-        </div>
+          <div className="grid gap-x-8 gap-y-10 md:grid-cols-2 xl:grid-cols-3">
+            {blogs.map((blog) => (
+              <BlogCard key={blog.id} blog={blog} />
+            ))}
+          </div>
+        </section>
+      ) : (
+        <section className="mx-auto flex min-h-[420px] w-full max-w-[1200px] items-center justify-center px-6 pb-24">
+          <div className="w-full max-w-lg rounded-3xl border border-gray-200 bg-white p-10 text-center shadow-sm">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-blue-100">
+              <BookOpen className="h-10 w-10 text-blue-600" />
+            </div>
 
-        {/* Blog Grid */}
-        <div className="grid gap-x-8 gap-y-10 md:grid-cols-2 xl:grid-cols-3">
-          {blogs.map((blog) => (
-            <BlogCard key={blog.id} blog={blog} />
-          ))}
-        </div>
-      </section>
+            <h2 className="mt-6 text-2xl font-bold text-gray-800">
+              No Blogs Yet
+            </h2>
+
+            <p className="mt-3 text-gray-500">
+              There are no published stories at the moment. Be the first to
+              share your ideas with the community.
+            </p>
+
+            {user ? (
+              <button
+                onClick={onCreate} // or setIsModalOpen(true)
+                className="mt-8 rounded-xl bg-blue-600 px-6 py-3 font-medium text-white transition hover:bg-blue-700"
+              >
+                Write the First Story
+              </button>
+            ) : (
+              <p className="mt-4 text-black-800">Login to Continue</p>
+            )}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

@@ -7,7 +7,6 @@ import { deleteDoc, doc } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import CreateBlogModal from "./CreateBlogModal";
 import DeleteConfirmationModal from "./deleteModal";
-import AlertModal from "./AlertModal";
 
 type Props = {
   blog: Blog;
