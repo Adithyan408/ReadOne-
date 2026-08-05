@@ -55,18 +55,7 @@ function Home() {
               a community of passionate writers from around the world.
             </p>
 
-            {/* Search */}
-            {/* <div className="mt-12 w-full max-w-xl px-2 sm:px-0">
-              <div className="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white px-5 py-3.5 shadow-sm transition focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100">
-                <Search size={20} className="shrink-0 text-gray-400" />
-
-                <input
-                  type="text"
-                  placeholder="Search blogs..."
-                  className="w-full bg-transparent text-gray-700 outline-none placeholder:text-gray-400"
-                />
-              </div>
-            </div> */}
+           
           </div>
         </div>
       </section>
