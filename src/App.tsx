@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./Components/ProtectedRoute";
 import Navbar from "./Components/Navbar";
 import CreateBlogModal from "./Components/CreateBlogModal";
@@ -42,6 +42,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+        <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
     </>

@@ -16,7 +16,7 @@ const formatPublishedDate = (createdAt: Timestamp | null | undefined) => {
   if (!createdAt) {
     return "Just now";
   }
-  const date = createdAt.toDate(); // Firestore Timestamp
+  const date = createdAt.toDate(); 
   const now = new Date();
 
   const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);

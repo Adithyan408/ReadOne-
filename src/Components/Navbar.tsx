@@ -33,7 +33,8 @@ function Navbar({ onCreate }: Props) {
 
   const handleLogout = async () => {
     await signOut(auth);
-    navigate("/");
+    navigate("/", {replace:true});
+    
   };
 
   return (
