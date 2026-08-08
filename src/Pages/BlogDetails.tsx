@@ -134,11 +134,13 @@ function BlogDetails() {
 
                 <div className="flex items-center gap-2">
                   <CalendarDays size={16} className="text-gray-400" />
-                  {blog.createdAt.toDate().toLocaleDateString("en-US", {
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric",
-                  })}
+                  {blog.createdAt
+                    ? blog.createdAt.toDate().toLocaleDateString("en-US", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      })
+                    : "Just now"}
                 </div>
               </div>
 

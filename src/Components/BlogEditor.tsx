@@ -1,8 +1,8 @@
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
-import Underline from "@tiptap/extension-underline";
-import Link from "@tiptap/extension-link";
+// import Underline from "@tiptap/extension-underline";
+// import Link from "@tiptap/extension-link";
 import { useEffect } from "react";
 import {
   Bold,
@@ -46,9 +46,7 @@ function ToolbarButton({
       disabled={disabled}
       title={title}
       className={`p-2 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
-        active
-          ? "bg-black text-white"
-          : "hover:bg-gray-100 text-gray-700"
+        active ? "bg-black text-white" : "hover:bg-gray-100 text-gray-700"
       }`}
     >
       {children}
@@ -64,8 +62,8 @@ function BlogEditor({ value, onChange }: Props) {
   const editor = useEditor({
     extensions: [
       StarterKit,
-      Underline,
-      Link.configure({ openOnClick: false, autolink: true }),
+      // Underline,
+      // Link.configure({ openOnClick: false, autolink: true }),
       Placeholder.configure({
         placeholder: "Start writing your story...",
       }),
@@ -88,13 +86,13 @@ function BlogEditor({ value, onChange }: Props) {
     if (!editor) return;
 
     if (editor.getHTML() !== value) {
-      editor.commands.setContent(value);
+      editor.commands.setContent(value, {
+        emitUpdate: false,
+      });
     }
   }, [value, editor]);
 
   if (!editor) return null;
-
-  
 
   return (
     <div className="border rounded-2xl overflow-hidden">
@@ -214,8 +212,6 @@ function BlogEditor({ value, onChange }: Props) {
         </ToolbarButton>
 
         <Divider />
-
-        
       </div>
 
       {/* Editor body */}

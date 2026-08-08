@@ -7,5 +7,6 @@ export interface Blog {
   content: string;
   author: string;
   userId: string;
-  createdAt: Timestamp;
+  createdAt: Timestamp | null;
+  updatedAt?: Timestamp | null;
 }

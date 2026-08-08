@@ -106,12 +106,12 @@ function Login() {
                   Password
                 </label>
 
-                <button
+                {/* <button
                   type="button"
                   className="text-xs font-medium text-blue-600 hover:underline"
                 >
                   Forgot password?
-                </button>
+                </button> */}
               </div>
 
               <input

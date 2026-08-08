@@ -3,7 +3,7 @@ import type { Blog } from "../types/Blog";
 import { useAuth } from "../hooks/useAuth";
 import { useState } from "react";
 import { Pencil, Trash2, User } from "lucide-react";
-import { deleteDoc, doc } from "firebase/firestore";
+import { deleteDoc, doc, Timestamp } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import CreateBlogModal from "./CreateBlogModal";
 import DeleteConfirmationModal from "./deleteModal";
@@ -12,7 +12,10 @@ type Props = {
   blog: Blog;
 };
 
-const formatPublishedDate = (createdAt: any) => {
+const formatPublishedDate = (createdAt: Timestamp | null | undefined) => {
+  if (!createdAt) {
+    return "Just now";
+  }
   const date = createdAt.toDate(); // Firestore Timestamp
   const now = new Date();
 

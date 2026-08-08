@@ -47,6 +47,7 @@ function CreateBlogModal({ isOpen, onClose, mode, blog }: Props) {
 };
 
   useEffect(() => {
+    if (!isOpen) return;
     if (mode === "edit" && blog) {
       setTitle(blog.title);
       setContent(blog.content);
@@ -56,7 +57,7 @@ function CreateBlogModal({ isOpen, onClose, mode, blog }: Props) {
       setTitle("");
       setContent("");
     }
-  }, [mode, blog]);
+  }, [isOpen, mode, blog]);
 
   if (!isOpen) return null;
 
@@ -159,7 +160,7 @@ function CreateBlogModal({ isOpen, onClose, mode, blog }: Props) {
           {/* Editor */}
 
           <div className="mt-6">
-            <BlogEditor value={content} onChange={setContent} />
+            <BlogEditor key={mode === "create" ? "create" : blog?.id} value={content} onChange={setContent} />
           </div>
         </form>
       </div>
