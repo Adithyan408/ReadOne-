@@ -1,9 +1,14 @@
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
-// import Underline from "@tiptap/extension-underline";
-// import Link from "@tiptap/extension-link";
+import Underline from "@tiptap/extension-underline";
+import Link from "@tiptap/extension-link";
 import { useEffect } from "react";
+import CharacterCount from "@tiptap/extension-character-count";
+import TextAlign from "@tiptap/extension-text-align";
+import Highlight from "@tiptap/extension-highlight";
+import Typography from "@tiptap/extension-typography";
+import "../BlogEditor.css";
 import {
   Bold,
   Italic,
@@ -62,10 +67,19 @@ function BlogEditor({ value, onChange }: Props) {
   const editor = useEditor({
     extensions: [
       StarterKit,
-      // Underline,
-      // Link.configure({ openOnClick: false, autolink: true }),
+      Underline,
+      Link.configure({
+        openOnClick: false,
+        autolink: true,
+      }),
       Placeholder.configure({
         placeholder: "Start writing your story...",
+      }),
+      CharacterCount,
+      Typography,
+      Highlight,
+      TextAlign.configure({
+        types: ["heading", "paragraph"],
       }),
     ],
 
