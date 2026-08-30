@@ -153,11 +153,11 @@ For deployment:
 
 ## Live Demo
 
-**Vercel:** `<your-vercel-deployment-url>`
+**Vercel:** `https://read-one-blog.vercel.app/`
 
 ## Repository
 
-**GitHub:** `<your-github-repository-url>`
+**GitHub:** `https://github.com/Adithyan408/ReadOne`
 
 ## License
 
