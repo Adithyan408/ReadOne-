@@ -10,7 +10,7 @@ import { Link } from "react-router-dom";
 
 function SavedBlogs() {
   const { user } = useAuth();
-  const { savedBlogIds, loading: savedLoading } = useSavedBlogs();
+  const { isSaved, loading: savedLoading } = useSavedBlogs();
   const [allBlogs, setAllBlogs] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -34,10 +34,13 @@ function SavedBlogs() {
     return () => unsubscribe();
   }, []);
 
-  // Filter blogs: must be saved AND authored by another user
-  const savedBlogs = allBlogs.filter(
-    (b) => savedBlogIds.includes(b.id) && b.userId !== user?.uid
-  );
+  // Filter blogs: must be saved by the user
+  const savedBlogs = allBlogs.filter((b) => {
+    const isDocSaved = Boolean(
+      user && Array.isArray(b.savedBy) && b.savedBy.includes(user.uid)
+    );
+    return isSaved(b.id) || isDocSaved;
+  });
 
   return (
     <div className="min-h-screen bg-[#F8F6F2] pb-24">
@@ -58,7 +61,7 @@ function SavedBlogs() {
                   Saved Blogs
                 </h1>
                 <p className="mt-1 text-sm text-gray-500">
-                  Stories by other authors you've bookmarked for reading later.
+                  Stories you've bookmarked for reading later.
                 </p>
               </div>
             </div>

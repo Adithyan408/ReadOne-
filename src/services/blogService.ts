@@ -129,23 +129,28 @@ export const toggleSaveBlog = async (
   blogId: string,
   isCurrentlySaved: boolean
 ): Promise<void> => {
-  const userRef = doc(db, "users", userId);
-  if (isCurrentlySaved) {
+  // 1. Update the blog document in 'blogs' collection
+  try {
+    const blogRef = doc(db, "blogs", blogId);
+    await updateDoc(blogRef, {
+      savedBy: isCurrentlySaved ? arrayRemove(userId) : arrayUnion(userId),
+    });
+  } catch (err) {
+    console.warn("Could not update savedBy on blog doc:", err);
+  }
+
+  // 2. Also update 'users' collection document
+  try {
+    const userRef = doc(db, "users", userId);
     await setDoc(
       userRef,
       {
-        savedBlogs: arrayRemove(blogId),
+        savedBlogs: isCurrentlySaved ? arrayRemove(blogId) : arrayUnion(blogId),
       },
       { merge: true }
     );
-  } else {
-    await setDoc(
-      userRef,
-      {
-        savedBlogs: arrayUnion(blogId),
-      },
-      { merge: true }
-    );
+  } catch (err) {
+    console.warn("Could not update savedBlogs on user doc:", err);
   }
 };
 

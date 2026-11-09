@@ -12,6 +12,7 @@ export interface Blog {
   likes?: string[];
   likesCount?: number;
   commentsCount?: number;
+  savedBy?: string[];
 }
 
 export interface Comment {
