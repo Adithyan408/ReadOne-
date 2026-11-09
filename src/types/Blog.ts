@@ -9,4 +9,18 @@ export interface Blog {
   userId: string;
   createdAt: Timestamp | null;
   updatedAt?: Timestamp | null;
+  likes?: string[];
+  likesCount?: number;
+  commentsCount?: number;
+}
+
+export interface Comment {
+  id: string;
+  blogId: string;
+  userId: string;
+  userName: string;
+  userEmail?: string | null;
+  content: string;
+  createdAt: Timestamp | null;
+  updatedAt?: Timestamp | null;
 }
