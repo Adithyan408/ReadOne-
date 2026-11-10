@@ -70,11 +70,14 @@ function CommentSection({ blog }: Props) {
   const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState<Comment | null>(null);
   const [inputError, setInputError] = useState("");
+  const deletedCommentIdsRef = React.useRef<Set<string>>(new Set());
 
   useEffect(() => {
     if (!blog.id) return;
     const unsubscribe = subscribeToComments(blog.id, (fetchedComments) => {
-      setComments(fetchedComments);
+      setComments(
+        fetchedComments.filter((c) => !deletedCommentIdsRef.current.has(c.id))
+      );
     });
 
     return () => unsubscribe();
@@ -169,7 +172,8 @@ function CommentSection({ blog }: Props) {
   const handleConfirmDelete = async () => {
     if (!commentToDelete) return;
     const idToDelete = commentToDelete.id;
-    // Optimistically remove from local comments state
+    deletedCommentIdsRef.current.add(idToDelete);
+    // Optimistically remove from local comments state immediately
     setComments((prev) => prev.filter((c) => c.id !== idToDelete));
     setCommentToDelete(null);
 
@@ -204,7 +208,7 @@ function CommentSection({ blog }: Props) {
           <div>
             <h3 className="text-2xl font-bold text-gray-900">Discussion</h3>
             <p className="text-sm text-gray-500">
-              {comments.length} {comments.length === 1 ? "comment" : "comments"}
+              {Math.max(0, comments.length)} {Math.max(0, comments.length) === 1 ? "comment" : "comments"}
             </p>
           </div>
         </div>

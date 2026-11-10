@@ -3,7 +3,6 @@ import {
   doc,
   arrayUnion,
   arrayRemove,
-  increment,
   addDoc,
   deleteDoc,
   serverTimestamp,
@@ -18,6 +17,7 @@ import type { Comment } from "../types/Blog";
 /**
  * Toggle like for a blog
  * Updates blog document, user document, and localStorage
+ * Guarantees likesCount is never negative and reflects exact count
  */
 export const toggleBlogLike = async (
   blogId: string,
@@ -26,17 +26,31 @@ export const toggleBlogLike = async (
 ): Promise<void> => {
   const blogRef = doc(db, "blogs", blogId);
 
-  // 1. Update on blog document
+  // 1. Update on blog document with non-negative clamped count
   try {
+    const blogSnap = await getDoc(blogRef);
+    const data = blogSnap.exists() ? blogSnap.data() : null;
+    const currentLikes: string[] = Array.isArray(data?.likes) ? data.likes : [];
+    const currentCount =
+      typeof data?.likesCount === "number"
+        ? Math.max(0, data.likesCount)
+        : currentLikes.length;
+
     if (isCurrentlyLiked) {
+      // Unliking
+      const nextLikes = currentLikes.filter((id) => id !== userId);
+      const nextCount = Math.max(0, Math.min(currentCount - 1, nextLikes.length));
       await updateDoc(blogRef, {
-        likes: arrayRemove(userId),
-        likesCount: increment(-1),
+        likes: nextLikes,
+        likesCount: nextCount,
       });
     } else {
+      // Liking
+      const nextLikes = Array.from(new Set([...currentLikes, userId]));
+      const nextCount = Math.max(1, Math.max(currentCount + 1, nextLikes.length));
       await updateDoc(blogRef, {
-        likes: arrayUnion(userId),
-        likesCount: increment(1),
+        likes: nextLikes,
+        likesCount: nextCount,
       });
     }
   } catch {
@@ -141,9 +155,14 @@ export const addComment = async (
   // 2. Also try writing to blog document comments array
   try {
     const blogRef = doc(db, "blogs", blogId);
+    const blogSnap = await getDoc(blogRef);
+    const data = blogSnap.exists() ? blogSnap.data() : null;
+    const existingComments: Comment[] = Array.isArray(data?.comments) ? data.comments : [];
+    const nextCount = Math.max(1, existingComments.length + 1);
+
     await updateDoc(blogRef, {
       comments: arrayUnion(commentObj),
-      commentsCount: increment(1),
+      commentsCount: nextCount,
     });
   } catch {
     try {
@@ -170,7 +189,74 @@ export const addComment = async (
     // ignore
   }
 
+  // 4. Clean any deleted marker for this id and trigger active notifiers
+  activeDeletedCommentIds.delete(commentObj.id);
+  const notifiers = activeBlogNotifiers.get(blogId);
+  if (notifiers) {
+    notifiers.forEach((fn) => {
+      try {
+        fn();
+      } catch {
+        // ignore
+      }
+    });
+  }
+
   return commentObj.id;
+};
+
+// In-memory set of actively deleted comment IDs
+const activeDeletedCommentIds = new Set<string>();
+
+// Active notify triggers per blogId
+const activeBlogNotifiers = new Map<string, Set<() => void>>();
+
+/**
+ * Mark comment as deleted immediately in-memory and in localStorage,
+ * and synchronously notify all active subscribers for this blog
+ */
+export const markCommentAsDeleted = (blogId: string, commentId: string): void => {
+  activeDeletedCommentIds.add(commentId);
+
+  // 1. Update localStorage deleted tracking
+  try {
+    const delKey = `deleted_comments_${blogId}`;
+    const rawDel = localStorage.getItem(delKey);
+    const delList: string[] = rawDel ? JSON.parse(rawDel) : [];
+    if (!delList.includes(commentId)) {
+      localStorage.setItem(
+        delKey,
+        JSON.stringify(Array.from(new Set([...delList, commentId])))
+      );
+    }
+  } catch {
+    // ignore
+  }
+
+  // 2. Remove from localStorage cache
+  try {
+    const localKey = `blog_comments_${blogId}`;
+    const raw = localStorage.getItem(localKey);
+    if (raw) {
+      const list: Comment[] = JSON.parse(raw);
+      const filtered = list.filter((c) => c.id !== commentId);
+      localStorage.setItem(localKey, JSON.stringify(filtered));
+    }
+  } catch {
+    // ignore
+  }
+
+  // 3. Immediately trigger all active subscriber notify functions for this blog
+  const notifiers = activeBlogNotifiers.get(blogId);
+  if (notifiers) {
+    notifiers.forEach((fn) => {
+      try {
+        fn();
+      } catch {
+        // ignore
+      }
+    });
+  }
 };
 
 /**
@@ -228,16 +314,33 @@ export const updateComment = async (
   } catch {
     // ignore
   }
+
+  // 4. Trigger active notifiers for immediate update
+  const notifiers = activeBlogNotifiers.get(blogId);
+  if (notifiers) {
+    notifiers.forEach((fn) => {
+      try {
+        fn();
+      } catch {
+        // ignore
+      }
+    });
+  }
 };
 
 /**
  * Delete a comment
+ * Immediately marks as deleted locally, notifies active subscribers,
+ * deletes from Firestore subcollection, and cleans up blog document comments.
  */
 export const deleteComment = async (
   blogId: string,
   commentId: string
 ): Promise<void> => {
-  // 1. Try subcollection delete
+  // 1. Instantly mark as deleted and notify active subscribers in 0ms
+  markCommentAsDeleted(blogId, commentId);
+
+  // 2. Delete from Firestore subcollection
   try {
     const commentRef = doc(db, "blogs", blogId, "comments", commentId);
     await deleteDoc(commentRef);
@@ -245,7 +348,7 @@ export const deleteComment = async (
     console.warn("Subcollection delete comment notice:", err);
   }
 
-  // 2. Try blog document update
+  // 3. Best-effort update blog document comments array and commentsCount
   try {
     const blogRef = doc(db, "blogs", blogId);
     const blogSnap = await getDoc(blogRef);
@@ -253,23 +356,15 @@ export const deleteComment = async (
       const data = blogSnap.data();
       const existing: Comment[] = Array.isArray(data.comments) ? data.comments : [];
       const updated = existing.filter((c) => c.id !== commentId);
+      const currentCount =
+        typeof data.commentsCount === "number"
+          ? data.commentsCount
+          : existing.length;
+      const nextCommentsCount = Math.max(0, currentCount - 1);
       await updateDoc(blogRef, {
         comments: updated,
-        commentsCount: increment(-1),
+        commentsCount: nextCommentsCount,
       });
-    }
-  } catch {
-    // ignore
-  }
-
-  // 3. Delete from localStorage cache
-  try {
-    const localKey = `blog_comments_${blogId}`;
-    const raw = localStorage.getItem(localKey);
-    if (raw) {
-      const list: Comment[] = JSON.parse(raw);
-      const updated = list.filter((c) => c.id !== commentId);
-      localStorage.setItem(localKey, JSON.stringify(updated));
     }
   } catch {
     // ignore
@@ -278,14 +373,25 @@ export const deleteComment = async (
 
 /**
  * Real-time listener for comments of a blog
- * Merges subcollection, blog doc comments array, and local cache
+ * Prioritizes the authoritative live Firestore subcollection.
+ * Guarantees deleted comments never resurrect and all updates render immediately.
  */
 export const subscribeToComments = (
   blogId: string,
   callback: (comments: Comment[]) => void
 ) => {
   let subcollectionComments: Comment[] = [];
+  let hasReceivedSubcollectionSnapshot = false;
   let blogDocComments: Comment[] = [];
+
+  const getDeletedIds = (): string[] => {
+    try {
+      const raw = localStorage.getItem(`deleted_comments_${blogId}`);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  };
 
   const getLocalComments = (): Comment[] => {
     try {
@@ -296,20 +402,40 @@ export const subscribeToComments = (
     }
   };
 
+  const isCommentDeleted = (id: string, delSet: Set<string>): boolean => {
+    return activeDeletedCommentIds.has(id) || delSet.has(id);
+  };
+
   const notify = () => {
-    const local = getLocalComments();
-    const map = new Map<string, Comment>();
+    const delList = getDeletedIds();
+    const delSet = new Set(delList);
 
-    // 1. First add local comments
-    local.forEach((c) => map.set(c.id, c));
+    let list: Comment[];
 
-    // 2. Add blog doc comments
-    blogDocComments.forEach((c) => map.set(c.id, c));
+    if (hasReceivedSubcollectionSnapshot) {
+      // Subcollection is the authoritative live source from Firestore
+      list = subcollectionComments.filter(
+        (c) => !isCommentDeleted(c.id, delSet)
+      );
+    } else {
+      // Prior to the first subcollection snapshot, use local cache & blog doc
+      const local = getLocalComments();
+      const map = new Map<string, Comment>();
 
-    // 3. Add subcollection comments (highest authority)
-    subcollectionComments.forEach((c) => map.set(c.id, c));
+      local.forEach((c) => {
+        if (!isCommentDeleted(c.id, delSet)) {
+          map.set(c.id, c);
+        }
+      });
 
-    const list = Array.from(map.values());
+      blogDocComments.forEach((c) => {
+        if (!isCommentDeleted(c.id, delSet)) {
+          map.set(c.id, c);
+        }
+      });
+
+      list = Array.from(map.values());
+    }
 
     // Sort by createdAt descending (newest first)
     list.sort((a, b) => {
@@ -336,7 +462,13 @@ export const subscribeToComments = (
     callback(list);
   };
 
-  // Immediate notification from cache
+  // Register this notify callback for immediate deletion events
+  if (!activeBlogNotifiers.has(blogId)) {
+    activeBlogNotifiers.set(blogId, new Set());
+  }
+  activeBlogNotifiers.get(blogId)!.add(notify);
+
+  // Immediate notification from cache/in-memory state
   notify();
 
   // 1. Listen to subcollection
@@ -344,6 +476,7 @@ export const subscribeToComments = (
   const unsubSubcol = onSnapshot(
     commentsCol,
     (snapshot) => {
+      hasReceivedSubcollectionSnapshot = true;
       subcollectionComments = snapshot.docs.map((docSnap) => {
         const data = docSnap.data();
         return {
@@ -364,7 +497,7 @@ export const subscribeToComments = (
     }
   );
 
-  // 2. Listen to blog document comments array
+  // 2. Listen to blog document comments array for initial sync / fallback
   const blogRef = doc(db, "blogs", blogId);
   const unsubBlog = onSnapshot(
     blogRef,
@@ -373,7 +506,9 @@ export const subscribeToComments = (
         const data = docSnap.data();
         if (Array.isArray(data.comments)) {
           blogDocComments = data.comments;
-          notify();
+          if (!hasReceivedSubcollectionSnapshot) {
+            notify();
+          }
         }
       }
     },
@@ -385,6 +520,13 @@ export const subscribeToComments = (
   return () => {
     unsubSubcol();
     unsubBlog();
+    const notifiers = activeBlogNotifiers.get(blogId);
+    if (notifiers) {
+      notifiers.delete(notify);
+      if (notifiers.size === 0) {
+        activeBlogNotifiers.delete(blogId);
+      }
+    }
   };
 };
 

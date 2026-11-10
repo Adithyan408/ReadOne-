@@ -50,14 +50,15 @@ function BlogCard({ blog }: Props) {
   const [showEditModal, setShowEditModal] = useState(false);
   const [, setForceRender] = useState(0);
 
-  // Real-time live comments count
-  const [commentsCount, setCommentsCount] = useState<number>(
-    blog.commentsCount ?? (Array.isArray(blog.comments) ? blog.comments.length : 0)
-  );
+  // Real-time live comments count (guaranteed >= 0)
+  const [commentsCount, setCommentsCount] = useState<number>(() => {
+    const initial = blog.commentsCount ?? (Array.isArray(blog.comments) ? blog.comments.length : 0);
+    return Math.max(0, initial);
+  });
 
   useEffect(() => {
     const unsubComments = subscribeToComments(blog.id, (commentsList) => {
-      setCommentsCount(commentsList.length);
+      setCommentsCount(Math.max(0, commentsList.length));
     });
 
     return () => unsubComments();
@@ -94,10 +95,16 @@ function BlogCard({ blog }: Props) {
   );
 
   const isLiked = isLocallyUnliked ? false : isLocallyLiked || isLikedOnDoc;
-  const baseCount = docLikes.length > 0 ? docLikes.length : (blog.likesCount ?? 0);
-  const likesCount = isLiked
-    ? (isLikedOnDoc ? baseCount : baseCount + 1)
-    : (isLikedOnDoc ? Math.max(0, baseCount - 1) : baseCount);
+  const rawBase = docLikes.length > 0 ? docLikes.length : Math.max(0, blog.likesCount ?? 0);
+  const baseCount = Math.max(0, rawBase);
+
+  let calculatedLikes = baseCount;
+  if (isLiked && !isLikedOnDoc) {
+    calculatedLikes = baseCount + 1;
+  } else if (!isLiked && isLikedOnDoc) {
+    calculatedLikes = Math.max(0, baseCount - 1);
+  }
+  const likesCount = Math.max(0, calculatedLikes);
 
   const isBlogSavedByDoc = Boolean(
     user && Array.isArray(blog.savedBy) && blog.savedBy.includes(user.uid)
@@ -319,15 +326,15 @@ function BlogCard({ blog }: Props) {
                   : "text-gray-400 group-hover/like:text-rose-500"
                   }`}
               />
-              <span>{likesCount}</span>
+              <span>{Math.max(0, likesCount)}</span>
             </button>
 
             <div
               className="flex items-center gap-1.5 rounded-full bg-gray-50 px-2.5 py-1 text-xs font-medium text-gray-600"
-              title={`${commentsCount} comments`}
+              title={`${Math.max(0, commentsCount)} comments`}
             >
               <MessageCircle size={14} className="text-gray-400" />
-              <span>{commentsCount}</span>
+              <span>{Math.max(0, commentsCount)}</span>
             </div>
           </div>
 

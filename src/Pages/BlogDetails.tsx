@@ -67,15 +67,16 @@ function BlogDetails() {
 
   const [, setForceRender] = useState(0);
 
-  // Real-time live comments count
-  const [commentsCount, setCommentsCount] = useState<number>(
-    blog?.commentsCount ?? (Array.isArray(blog?.comments) ? blog.comments.length : 0)
-  );
+  // Real-time live comments count (guaranteed >= 0)
+  const [commentsCount, setCommentsCount] = useState<number>(() => {
+    const initial = blog?.commentsCount ?? (Array.isArray(blog?.comments) ? blog.comments.length : 0);
+    return Math.max(0, initial);
+  });
 
   useEffect(() => {
     if (!id) return;
     const unsubComments = subscribeToComments(id, (commentsList) => {
-      setCommentsCount(commentsList.length);
+      setCommentsCount(Math.max(0, commentsList.length));
     });
 
   return () => unsubComments();
@@ -114,10 +115,16 @@ const isLocallyUnliked = Boolean(
 );
 
 const isLiked = isLocallyUnliked ? false : isLocallyLiked || isLikedOnDoc;
-const baseCount = docLikes.length > 0 ? docLikes.length : (blog?.likesCount ?? 0);
-const likesCount = isLiked
-  ? (isLikedOnDoc ? baseCount : baseCount + 1)
-  : (isLikedOnDoc ? Math.max(0, baseCount - 1) : baseCount);
+const rawBase = docLikes.length > 0 ? docLikes.length : Math.max(0, blog?.likesCount ?? 0);
+const baseCount = Math.max(0, rawBase);
+
+let calculatedLikes = baseCount;
+if (isLiked && !isLikedOnDoc) {
+  calculatedLikes = baseCount + 1;
+} else if (!isLiked && isLikedOnDoc) {
+  calculatedLikes = Math.max(0, baseCount - 1);
+}
+const likesCount = Math.max(0, calculatedLikes);
 
 const handleLike = async () => {
   if (!user) {
@@ -363,7 +370,7 @@ return (
                     }`}
                 />
                 <span>
-                  {likesCount} {likesCount === 1 ? "Like" : "Likes"}
+                  {Math.max(0, likesCount)} {Math.max(0, likesCount) === 1 ? "Like" : "Likes"}
                 </span>
               </button>
 
@@ -375,7 +382,7 @@ return (
               >
                 <MessageCircle size={18} className="text-gray-400" />
                 <span>
-                  {commentsCount} {commentsCount === 1 ? "Comment" : "Comments"}
+                  {Math.max(0, commentsCount)} {Math.max(0, commentsCount) === 1 ? "Comment" : "Comments"}
                 </span>
               </button>
 

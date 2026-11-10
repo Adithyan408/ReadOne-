@@ -50,14 +50,25 @@ function UserProfile() {
     return () => unsubscribe();
   }, [user]);
 
-  const totalLikes = userBlogs.reduce(
-    (sum, b) => sum + (b.likesCount ?? b.likes?.length ?? 0),
-    0
-  );
-  const totalComments = userBlogs.reduce(
-    (sum, b) => sum + (b.commentsCount ?? 0),
-    0
-  );
+  const totalLikes = Math.max(
+      0,
+      userBlogs.reduce(
+        (sum, b) => sum + Math.max(0, b.likesCount ?? b.likes?.length ?? 0),
+        0
+      )
+    );
+  const totalComments = Math.max(
+      0,
+      userBlogs.reduce(
+        (sum, b) =>
+          sum +
+          Math.max(
+            0,
+            b.commentsCount ?? (Array.isArray(b.comments) ? b.comments.length : 0)
+          ),
+        0
+      )
+    );
 
   return (
     <>
