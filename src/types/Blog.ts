@@ -12,6 +12,7 @@ export interface Blog {
   likes?: string[];
   likesCount?: number;
   commentsCount?: number;
+  comments?: Comment[];
   savedBy?: string[];
 }
 
@@ -22,6 +23,6 @@ export interface Comment {
   userName: string;
   userEmail?: string | null;
   content: string;
-  createdAt: Timestamp | null;
-  updatedAt?: Timestamp | null;
+  createdAt: Timestamp | string | null;
+  updatedAt?: Timestamp | string | null;
 }

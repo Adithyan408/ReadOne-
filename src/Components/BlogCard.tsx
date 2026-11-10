@@ -2,13 +2,13 @@ import { Link, useNavigate } from "react-router-dom";
 import type { Blog } from "../types/Blog";
 import { useAuth } from "../hooks/useAuth";
 import { useSavedBlogs } from "../hooks/useSavedBlogs";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Bookmark, Heart, MessageCircle, Pencil, Trash2 } from "lucide-react";
 import { deleteDoc, doc, Timestamp } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import CreateBlogModal from "./CreateBlogModal";
 import DeleteConfirmationModal from "./deleteModal";
-import { toggleBlogLike } from "../services/blogService";
+import { toggleBlogLike, subscribeToComments } from "../services/blogService";
 
 type Props = {
   blog: Blog;
@@ -48,12 +48,60 @@ function BlogCard({ blog }: Props) {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [, setForceRender] = useState(0);
 
-  const likes = blog.likes ?? [];
-  const isLiked = user ? likes.includes(user.uid) : false;
-  const likesCount = blog.likesCount ?? likes.length ?? 0;
-  const commentsCount = blog.commentsCount ?? 0;
-  const isBlogSavedByDoc = Boolean(user && Array.isArray(blog.savedBy) && blog.savedBy.includes(user.uid));
+  // Real-time live comments count
+  const [commentsCount, setCommentsCount] = useState<number>(
+    blog.commentsCount ?? (Array.isArray(blog.comments) ? blog.comments.length : 0)
+  );
+
+  useEffect(() => {
+    const unsubComments = subscribeToComments(blog.id, (commentsList) => {
+      setCommentsCount(commentsList.length);
+    });
+
+    return () => unsubComments();
+  }, [blog.id]);
+
+  // Likes calculation: combines blog document with local storage for instant permanent state
+  const docLikes: string[] = Array.isArray(blog.likes) ? blog.likes : [];
+  const isLikedOnDoc = Boolean(user && docLikes.includes(user.uid));
+
+  const isLocallyLiked = Boolean(
+    user &&
+    (() => {
+      try {
+        const raw = localStorage.getItem(`liked_blogs_${user.uid}`);
+        const list: string[] = raw ? JSON.parse(raw) : [];
+        return list.includes(blog.id);
+      } catch {
+        return false;
+      }
+    })()
+  );
+
+  const isLocallyUnliked = Boolean(
+    user &&
+    (() => {
+      try {
+        const raw = localStorage.getItem(`unliked_blogs_${user.uid}`);
+        const list: string[] = raw ? JSON.parse(raw) : [];
+        return list.includes(blog.id);
+      } catch {
+        return false;
+      }
+    })()
+  );
+
+  const isLiked = isLocallyUnliked ? false : isLocallyLiked || isLikedOnDoc;
+  const baseCount = docLikes.length > 0 ? docLikes.length : (blog.likesCount ?? 0);
+  const likesCount = isLiked
+    ? (isLikedOnDoc ? baseCount : baseCount + 1)
+    : (isLikedOnDoc ? Math.max(0, baseCount - 1) : baseCount);
+
+  const isBlogSavedByDoc = Boolean(
+    user && Array.isArray(blog.savedBy) && blog.savedBy.includes(user.uid)
+  );
   const saved = isSaved(blog.id) || isBlogSavedByDoc;
 
   const handleLike = async (e: React.MouseEvent) => {
@@ -64,10 +112,49 @@ function BlogCard({ blog }: Props) {
       setShowLoginModal(true);
       return;
     }
+
+    const currentlyLiked = isLiked;
+    const nextLiked = !currentlyLiked;
+
+    // Immediately persist in localStorage for instant 0ms update that never gets removed
     try {
-      await toggleBlogLike(blog.id, user.uid, isLiked);
+      const likedKey = `liked_blogs_${user.uid}`;
+      const unlikedKey = `unliked_blogs_${user.uid}`;
+
+      const likedRaw = localStorage.getItem(likedKey);
+      const likedList: string[] = likedRaw ? JSON.parse(likedRaw) : [];
+      const unlikedRaw = localStorage.getItem(unlikedKey);
+      const unlikedList: string[] = unlikedRaw ? JSON.parse(unlikedRaw) : [];
+
+      if (nextLiked) {
+        localStorage.setItem(
+          likedKey,
+          JSON.stringify(Array.from(new Set([...likedList, blog.id])))
+        );
+        localStorage.setItem(
+          unlikedKey,
+          JSON.stringify(unlikedList.filter((bId) => bId !== blog.id))
+        );
+      } else {
+        localStorage.setItem(
+          likedKey,
+          JSON.stringify(likedList.filter((bId) => bId !== blog.id))
+        );
+        localStorage.setItem(
+          unlikedKey,
+          JSON.stringify(Array.from(new Set([...unlikedList, blog.id])))
+        );
+      }
+    } catch {
+      // ignore
+    }
+
+    setForceRender((v) => v + 1);
+
+    try {
+      await toggleBlogLike(blog.id, user.uid, currentlyLiked);
     } catch (error) {
-      console.error("Error toggling like:", error);
+      console.warn("toggleBlogLike notice:", error);
     }
   };
 
@@ -103,11 +190,6 @@ function BlogCard({ blog }: Props) {
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (loading) return;
-    if (!user) {
-      setShowLoginModal(true);
-      return;
-    }
     navigate(`/blog/${blog.id}`);
   };
 
@@ -132,7 +214,7 @@ function BlogCard({ blog }: Props) {
           <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
             <h2 className="text-xl font-bold text-gray-800">Login Required</h2>
             <p className="mt-3 text-gray-600">
-              You need to log in to read the full article, like, or save stories.
+              You need to log in to like, save, or interact with this story.
             </p>
             <div className="mt-6 flex justify-end gap-3">
               <button
@@ -259,8 +341,8 @@ function BlogCard({ blog }: Props) {
               type="button"
               onClick={handleSave}
               className={`group/save flex h-8.5 w-8.5 items-center justify-center rounded-xl transition-all duration-200 ${saved
-                  ? "bg-blue-600 text-white shadow-sm ring-2 ring-blue-300 scale-105"
-                  : "bg-gray-100 text-gray-500 hover:bg-blue-50 hover:text-blue-600"
+                ? "bg-blue-600 text-white shadow-sm ring-2 ring-blue-300 scale-105"
+                : "bg-gray-100 text-gray-500 hover:bg-blue-50 hover:text-blue-600"
                 }`}
               title={saved ? "Saved (click to remove)" : "Save story"}
               aria-label={saved ? "Saved story" : "Save story"}

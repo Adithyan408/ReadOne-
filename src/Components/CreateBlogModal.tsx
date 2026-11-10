@@ -81,6 +81,8 @@ function CreateBlogModal({ isOpen, onClose, mode, blog }: Props) {
           likes: [],
           likesCount: 0,
           commentsCount: 0,
+          comments: [],
+          savedBy: [],
         });
       } else if (mode === "edit" && blog) {
         await updateDoc(doc(db, "blogs", blog.id), {

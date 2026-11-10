@@ -18,15 +18,31 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import type { Timestamp } from "firebase/firestore";
 
 type Props = {
   blog: Blog;
 };
 
-const formatCommentDate = (createdAt: Timestamp | null | undefined) => {
+const formatCommentDate = (createdAt: unknown) => {
   if (!createdAt) return "Just now";
-  const date = createdAt.toDate();
+  let date: Date;
+  if (
+    typeof createdAt === "object" &&
+    createdAt !== null &&
+    "toDate" in createdAt &&
+    typeof (createdAt as { toDate: () => Date }).toDate === "function"
+  ) {
+    date = (createdAt as { toDate: () => Date }).toDate();
+  } else if (createdAt instanceof Date) {
+    date = createdAt;
+  } else if (typeof createdAt === "string" || typeof createdAt === "number") {
+    date = new Date(createdAt);
+  } else {
+    return "Just now";
+  }
+
+  if (isNaN(date.getTime())) return "Just now";
+
   const now = new Date();
   const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
 
@@ -46,7 +62,7 @@ const formatCommentDate = (createdAt: Timestamp | null | undefined) => {
 
 function CommentSection({ blog }: Props) {
   const { user } = useAuth();
-  const [comments, setComments] = useState<Comment[]>([]);
+  const [comments, setComments] = useState<Comment[]>(blog.comments || []);
   const [newComment, setNewComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
@@ -76,8 +92,24 @@ function CommentSection({ blog }: Props) {
 
     setInputError("");
     setIsSubmitting(true);
+
+    const tempId = `temp_${Date.now()}`;
+    const optimisticComment: Comment = {
+      id: tempId,
+      blogId: blog.id,
+      userId: user.uid,
+      userName: user.displayName || user.email?.split("@")[0] || "You",
+      userEmail: user.email || null,
+      content: trimmed,
+      createdAt: new Date().toISOString(),
+    };
+
+    // Optimistically show comment immediately
+    setComments((prev) => [optimisticComment, ...prev]);
+    setNewComment("");
+
     try {
-      await addComment(
+      const realId = await addComment(
         blog.id,
         {
           uid: user.uid,
@@ -86,10 +118,14 @@ function CommentSection({ blog }: Props) {
         },
         trimmed
       );
-      setNewComment("");
+
+      if (realId && realId !== tempId) {
+        setComments((prev) =>
+          prev.map((c) => (c.id === tempId ? { ...c, id: realId } : c))
+        );
+      }
     } catch (error) {
       console.error("Failed to add comment:", error);
-      setInputError("Failed to post comment. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -110,13 +146,21 @@ function CommentSection({ blog }: Props) {
     if (!trimmed) return;
 
     setIsSavingEdit(true);
+    // Optimistically update local comments state so the comment content is immediately updated
+    setComments((prev) =>
+      prev.map((c) =>
+        c.id === commentId
+          ? { ...c, content: trimmed, updatedAt: new Date().toISOString() }
+          : c
+      )
+    );
+    setEditingCommentId(null);
+    setEditContent("");
+
     try {
       await updateComment(blog.id, commentId, trimmed);
-      setEditingCommentId(null);
-      setEditContent("");
     } catch (error) {
       console.error("Failed to update comment:", error);
-      alert("Failed to update comment. Please try again.");
     } finally {
       setIsSavingEdit(false);
     }
@@ -124,12 +168,15 @@ function CommentSection({ blog }: Props) {
 
   const handleConfirmDelete = async () => {
     if (!commentToDelete) return;
+    const idToDelete = commentToDelete.id;
+    // Optimistically remove from local comments state
+    setComments((prev) => prev.filter((c) => c.id !== idToDelete));
+    setCommentToDelete(null);
+
     try {
-      await deleteComment(blog.id, commentToDelete.id);
-      setCommentToDelete(null);
+      await deleteComment(blog.id, idToDelete);
     } catch (error) {
       console.error("Failed to delete comment:", error);
-      alert("Failed to delete comment. Please try again.");
     }
   };
 
@@ -247,8 +294,8 @@ function CommentSection({ blog }: Props) {
               <div
                 key={comment.id}
                 className={`rounded-2xl border p-4 transition-all ${isEditing
-                    ? "border-blue-300 bg-blue-50/20"
-                    : "border-gray-200 bg-white hover:border-gray-300"
+                  ? "border-blue-300 bg-blue-50/20"
+                  : "border-gray-200 bg-white hover:border-gray-300"
                   }`}
               >
                 {/* Comment Header */}
@@ -299,8 +346,8 @@ function CommentSection({ blog }: Props) {
                         type="button"
                         onClick={() => setCommentToDelete(comment)}
                         className={`rounded-lg p-1.5 transition ${!isOwner && isBlogAuthor
-                            ? "text-red-400 hover:bg-red-50 hover:text-red-600"
-                            : "text-gray-400 hover:bg-gray-100 hover:text-red-600"
+                          ? "text-red-400 hover:bg-red-50 hover:text-red-600"
+                          : "text-gray-400 hover:bg-gray-100 hover:text-red-600"
                           }`}
                         title={
                           !isOwner && isBlogAuthor
