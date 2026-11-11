@@ -30,9 +30,10 @@ function Login() {
     try {
       await login(email, password);
       navigate("/");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
-      showError(error.message);
+      const msg = error instanceof Error ? error.message : "Failed to sign in";
+      showError(msg);
     }
   };
 
@@ -40,9 +41,10 @@ function Login() {
     try {
       await loginWithGoogle();
       navigate("/");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
-      showError(error.message);
+      const msg = error instanceof Error ? error.message : "Failed to sign in with Google";
+      showError(msg);
     }
   };
 

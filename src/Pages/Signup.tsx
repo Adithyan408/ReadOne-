@@ -65,9 +65,10 @@ function Signup() {
     try {
       await loginWithGoogle();
       navigate("/");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
-      showError(error.message)
+      const msg = error instanceof Error ? error.message : "Failed to sign up with Google";
+      showError(msg);
     }
   };
   const handleSignUp = async (e: React.FormEvent) => {
@@ -89,9 +90,10 @@ function Signup() {
       await signup(username.trim(), email.trim(), password);
 
       navigate("/");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
-      showError(error.message);
+      const msg = error instanceof Error ? error.message : "Failed to sign up";
+      showError(msg);
     } finally {
       setLoading(false);
     }

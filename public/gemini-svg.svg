@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" role="img" aria-label="Read One Browser Favicon">
+  <defs>
+    <!-- Crisp dark background for tab contrast -->
+    <rect id="bg" width="512" height="512" rx="112" fill="#0A0A0A" />
+  </defs>
+
+  <!-- Base Icon Canvas -->
+  <use href="#bg" />
+
+  <!-- Outer subtle border for high-definition displays -->
+  <rect x="8" y="8" width="496" height="496" rx="104" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-opacity="0.1" />
+
+  <!-- The "Read One" Mark -->
+  <g fill="#FFFFFF">
+    <!-- Left Book Page (Curved open leaf) -->
+    <path d="M 216 148 
+             C 172 136, 120 144, 88 164 
+             C 80 169, 76 177, 76 186 
+             L 76 348 
+             C 76 360, 90 368, 102 362 
+             C 134 346, 178 342, 216 354 
+             Z" fill-opacity="0.95" />
+
+    <!-- Right Page + Number "1" Spine & Upright Stem -->
+    <!-- Distinct, bold silhouette of the numeral '1' integrated into the book fold -->
+    <path d="M 276 170 
+             L 242 192 
+             C 234 197, 232 206, 232 216 
+             L 232 358 
+             C 232 370, 246 378, 258 372 
+             C 284 360, 314 354, 348 354 
+             C 362 354, 372 344, 372 330 
+             L 372 178 
+             C 372 166, 358 158, 346 160 
+             C 318 166, 292 168, 276 170 
+             Z" />
+
+    <!-- Strong Vertical Backbone of the '1' -->
+    <rect x="236" y="152" width="36" height="218" rx="8" />
+
+    <!-- Serif flag for the '1' -->
+    <path d="M 244 154 
+             L 186 196 
+             C 176 203, 182 220, 194 220 
+             L 244 220 
+             Z" />
+             
+    <!-- Horizontal Baseline Foot of the '1' -->
+    <rect x="180" y="370" width="152" height="26" rx="8" />
+  </g>
+</svg>
