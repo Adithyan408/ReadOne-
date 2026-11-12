@@ -26,31 +26,38 @@ type Props = {
   mode?: "user" | "admin";
 };
 
-  function Sidebar({ isOpen, onClose, onCreateBlog, mode = "user" }: Props) {
-    const { user } = useAuth();
-    const { savedBlogIds } = useSavedBlogs();
-    const { logout: logoutAdmin, adminUsername } = useAdminAuth();
-    const location = useLocation();
-    const navigate = useNavigate();
+function Sidebar({ isOpen, onClose, onCreateBlog, mode = "user" }: Props) {
+  const { user } = useAuth();
+  const { savedBlogIds } = useSavedBlogs();
+  const { logout: logoutAdmin, adminUsername } = useAdminAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
 
-    const isAdmin = mode === "admin";
+  const isAdmin = mode === "admin";
 
-      const handleNavigate = (path: string) => {
-        navigate(path);
-        onClose();
-      };
+  const handleNavigate = (path: string) => {
+    if (isAdmin && path.startsWith("/admin")) {
+      navigate(path, { replace: true });
+    } else if (isAdmin && path === "/") {
+      logoutAdmin();
+      navigate("/", { replace: true });
+    } else {
+      navigate(path);
+    }
+    onClose();
+  };
 
-      const handleUserLogout = async () => {
-        try {
-          await signOut(auth);
-          onClose();
-        navigate("/", { replace: true });
-      } catch (error) {
-        console.error("Error signing out:", error);
-      }
-    };
+  const handleUserLogout = async () => {
+    try {
+      await signOut(auth);
+      onClose();
+      navigate("/", { replace: true });
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
 
-    const handleAdminLogout = () => {
+  const handleAdminLogout = () => {
     logoutAdmin();
     onClose();
     navigate("/admin/login", { replace: true });
@@ -100,19 +107,19 @@ type Props = {
 
   return (
     <>
-        {/* Backdrop */}
+      {/* Backdrop */}
       <div
         onClick={onClose}
         className={`fixed inset-0 z-40 bg-black/40 backdrop-blur-xs transition-opacity duration-300 ${isOpen
-            ? "opacity-100 pointer-events-auto"
-            : "opacity-0 pointer-events-none"
-        }`}
-      aria-hidden="true"
+          ? "opacity-100 pointer-events-auto"
+          : "opacity-0 pointer-events-none"
+          }`}
+        aria-hidden="true"
       />
 
       {/* Fixed Sticky Sidebar Drawer */}
       <aside
-        className={`fixed top-0 left-0 bottom-0 z-50 flex h-screen w-72 sm:w-80 flex-col border-r border-gray-200 bg-white shadow-2xl transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "-translate-x-full"
+        className={`fixed top-0 left-0 bottom-0 z-50 flex h-dvh w-[85vw] max-w-xs sm:w-80 flex-col border-r border-gray-200 bg-white shadow-2xl transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "-translate-x-full"
           }`}
       >
         {/* Sidebar Header */}
@@ -123,8 +130,8 @@ type Props = {
           >
             <div
               className={`flex h-10 w-10 items-center justify-center rounded-xl ${isAdmin
-                  ? "bg-indigo-100 text-indigo-600"
-                  : "bg-blue-100 text-blue-600"
+                ? "bg-indigo-100 text-indigo-600"
+                : "bg-blue-100 text-blue-600"
                 }`}
             >
               {isAdmin ? (
@@ -150,7 +157,7 @@ type Props = {
             className="rounded-xl p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition"
             title="Close menu"
           >
-              <X size={20} />
+            <X size={20} />
           </button>
         </div>
 
@@ -208,54 +215,54 @@ type Props = {
             {isAdmin ? "Admin Navigation" : "Navigation"}
           </p>
 
-            {currentNavLinks.map((item) => {
-              const Icon = item.icon;
-              const isItemActive =
-                location.pathname === item.path ||
-                ("alternatePath" in item &&
-                  location.pathname === item.alternatePath);
+          {currentNavLinks.map((item) => {
+            const Icon = item.icon;
+            const isItemActive =
+              location.pathname === item.path ||
+              ("alternatePath" in item &&
+                location.pathname === item.alternatePath);
 
-                      return (
-                        <button
-                          key={item.path}
-                          onClick={() => handleNavigate(item.path)}
-                          className={`group flex w-full items-center justify-between rounded-xl px-3.5 py-3 text-left transition-all ${isItemActive
-                              ? isAdmin
-                                ? "bg-indigo-50 font-semibold text-indigo-700 shadow-xs border border-indigo-100/60"
-                                : "bg-blue-50 font-semibold text-blue-600 shadow-xs"
-                    : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                }`}
+            return (
+              <button
+                key={item.path}
+                onClick={() => handleNavigate(item.path)}
+                className={`group flex w-full items-center justify-between rounded-xl px-3.5 py-3 text-left transition-all ${isItemActive
+                  ? isAdmin
+                    ? "bg-indigo-50 font-semibold text-indigo-700 shadow-xs border border-indigo-100/60"
+                    : "bg-blue-50 font-semibold text-blue-600 shadow-xs"
+                  : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                  }`}
               >
-            <div className="flex items-center gap-3">
-              <Icon
-                size={20}
-                className={
-                  isItemActive
-                    ? isAdmin
-                      ? "text-indigo-600"
-                      : "text-blue-600"
-                    : "text-gray-400 group-hover:text-gray-600"
-                }
-              />
-              <div>
-                <span className="block text-sm leading-tight">
-                  {item.label}
-                </span>
-                <span className="block text-[11px] text-gray-400 font-normal leading-tight mt-0.5">
-                  {item.description}
-                </span>
-              </div>
-            </div>
+                <div className="flex items-center gap-3">
+                  <Icon
+                    size={20}
+                    className={
+                      isItemActive
+                        ? isAdmin
+                          ? "text-indigo-600"
+                          : "text-blue-600"
+                        : "text-gray-400 group-hover:text-gray-600"
+                    }
+                  />
+                  <div>
+                    <span className="block text-sm leading-tight">
+                      {item.label}
+                    </span>
+                    <span className="block text-[11px] text-gray-400 font-normal leading-tight mt-0.5">
+                      {item.description}
+                    </span>
+                  </div>
+                </div>
 
-            {"badge" in item &&
-              item.badge !== null &&
-              item.badge !== undefined && (
-                <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
-                  {item.badge}
-                </span>
-              )}
-          </button>
-          );
+                {"badge" in item &&
+                  item.badge !== null &&
+                  item.badge !== undefined && (
+                    <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
+                      {item.badge}
+                    </span>
+                  )}
+              </button>
+            );
           })}
 
           {!isAdmin && onCreateBlog && (

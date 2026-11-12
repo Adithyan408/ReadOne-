@@ -217,154 +217,154 @@ function BlogCard({ blog }: Props) {
       />
 
       {showLoginModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-            <h2 className="text-xl font-bold text-gray-800">Login Required</h2>
-            <p className="mt-3 text-gray-600">
-              You need to log in to like, save, or interact with this story.
-            </p>
-            <div className="mt-6 flex justify-end gap-3">
-              <button
-                onClick={() => setShowLoginModal(false)}
-                className="rounded-lg border border-gray-300 px-4 py-2 hover:bg-gray-100 text-sm font-medium"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => navigate("/login")}
-                className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 text-sm font-medium shadow-xs"
-              >
-                Login
-              </button>
-            </div>
-          </div>
-        </div>
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+                <div className="w-full max-w-md rounded-2xl bg-white p-5 sm:p-6 shadow-xl">
+                  <h2 className="text-lg sm:text-xl font-bold text-gray-800">Login Required</h2>
+                  <p className="mt-3 text-sm sm:text-base text-gray-600">
+                    You need to log in to like, save, or interact with this story.
+                  </p>
+                  <div className="mt-6 flex justify-end gap-3">
+                    <button
+                      onClick={() => setShowLoginModal(false)}
+                      className="rounded-lg border border-gray-300 px-4 py-2 hover:bg-gray-100 text-sm font-medium"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() => navigate("/login")}
+                      className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 text-sm font-medium shadow-xs"
+                    >
+                      Login
+                    </button>
+                  </div>
+                </div>
+              </div>
       )}
 
-      <Link
-        to={`/blog/${blog.id}`}
-        onClick={handleClick}
-        className="group flex h-full w-full flex-col justify-between overflow-hidden rounded-3xl border border-gray-200/80 bg-white p-6 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl"
-      >
-        <div>
-          {/* Author Header */}
-          <div className="flex items-center justify-between gap-3 mb-4">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-indigo-500 text-xs font-bold text-white uppercase shadow-xs">
-                {blog.author ? blog.author[0] : "A"}
-              </div>
-              <span className="truncate text-xs font-semibold text-gray-700">
-                {blog.author || "Anonymous"}
-              </span>
-              {user?.uid === blog.userId && (
-                <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-600 border border-blue-100">
-                  You
-                </span>
-              )}
-            </div>
+              <Link
+                to={`/blog/${blog.id}`}
+                onClick={handleClick}
+                className="group flex h-full w-full flex-col justify-between overflow-hidden rounded-2xl sm:rounded-3xl border border-gray-200/80 bg-white p-5 sm:p-6 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl"
+              >
+                <div>
+                  {/* Author Header */}
+                  <div className="flex items-center justify-between gap-3 mb-4">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-indigo-500 text-xs font-bold text-white uppercase shadow-xs">
+                        {blog.author ? blog.author[0] : "A"}
+                      </div>
+                      <span className="truncate text-xs font-semibold text-gray-700">
+                        {blog.author || "Anonymous"}
+                      </span>
+                      {user?.uid === blog.userId && (
+                        <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-600 border border-blue-100">
+                          You
+                        </span>
+                      )}
+                    </div>
 
-            {/* Edit / Delete (Blog Owner) */}
-            {user?.uid === blog.userId && (
-              <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleEdit();
-                  }}
-                  className="rounded-lg p-1.5 text-blue-600 transition hover:bg-blue-50"
-                  title="Edit blog"
-                >
-                  <Pencil size={13} />
-                </button>
+                    {/* Edit / Delete (Blog Owner) */}
+                    {user?.uid === blog.userId && (
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleEdit();
+                          }}
+                          className="rounded-lg p-1.5 text-blue-600 transition hover:bg-blue-50"
+                          title="Edit blog"
+                        >
+                          <Pencil size={13} />
+                        </button>
 
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setShowDeleteModal(true);
-                  }}
-                  className="rounded-lg p-1.5 text-red-600 transition hover:bg-red-50"
-                  title="Delete blog"
-                >
-                  <Trash2 size={13} />
-                </button>
-              </div>
-            )}
-          </div>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setShowDeleteModal(true);
+                          }}
+                          className="rounded-lg p-1.5 text-red-600 transition hover:bg-red-50"
+                          title="Delete blog"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
 
-          {/* Title */}
-          <h2 className="line-clamp-2 text-xl font-bold leading-snug text-gray-900 transition-colors duration-200 group-hover:text-blue-600">
-            {blog.title}
-          </h2>
+                  {/* Title */}
+                    <h2 className="line-clamp-2 break-words text-lg sm:text-xl font-bold leading-snug text-gray-900 transition-colors duration-200 group-hover:text-blue-600">
+                      {blog.title}
+                    </h2>
 
-          {/* Excerpt */}
-          <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-gray-600">
-            {plainText}
-          </p>
-        </div>
+                    {/* Excerpt */}
+                      <p className="mt-2.5 sm:mt-3 line-clamp-3 break-words text-sm leading-relaxed text-gray-600">
+                        {plainText}
+                      </p>
+                    </div>
 
-        {/* Footer Engagement Area */}
-        <div className="mt-6 flex items-center justify-between gap-2 border-t border-gray-100 pt-4">
-          {/* Left: Likes & Comments */}
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleLike}
-              className={`group/like flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium transition ${isLiked
-                ? "bg-rose-50 text-rose-600 hover:bg-rose-100"
-                : "bg-gray-50 text-gray-600 hover:bg-rose-50 hover:text-rose-600"
-                }`}
-              title={isLiked ? "Unlike blog" : "Like blog"}
-            >
-              <Heart
-                size={14}
-                className={`transition-transform duration-200 group-hover/like:scale-110 ${isLiked
-                  ? "fill-rose-500 text-rose-500"
-                  : "text-gray-400 group-hover/like:text-rose-500"
-                  }`}
-              />
-              <span>{Math.max(0, likesCount)}</span>
-            </button>
+                    {/* Footer Engagement Area */}
+                    <div className="mt-6 flex items-center justify-between gap-2 border-t border-gray-100 pt-4">
+                      {/* Left: Likes & Comments */}
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={handleLike}
+                          className={`group/like flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium transition ${isLiked
+                            ? "bg-rose-50 text-rose-600 hover:bg-rose-100"
+                            : "bg-gray-50 text-gray-600 hover:bg-rose-50 hover:text-rose-600"
+                            }`}
+                          title={isLiked ? "Unlike blog" : "Like blog"}
+                        >
+                          <Heart
+                            size={14}
+                            className={`transition-transform duration-200 group-hover/like:scale-110 ${isLiked
+                              ? "fill-rose-500 text-rose-500"
+                              : "text-gray-400 group-hover/like:text-rose-500"
+                              }`}
+                          />
+                          <span>{Math.max(0, likesCount)}</span>
+                        </button>
 
-            <div
-              className="flex items-center gap-1.5 rounded-full bg-gray-50 px-2.5 py-1 text-xs font-medium text-gray-600"
-              title={`${Math.max(0, commentsCount)} comments`}
-            >
-              <MessageCircle size={14} className="text-gray-400" />
-              <span>{Math.max(0, commentsCount)}</span>
-            </div>
-          </div>
+                        <div
+                          className="flex items-center gap-1.5 rounded-full bg-gray-50 px-2.5 py-1 text-xs font-medium text-gray-600"
+                          title={`${Math.max(0, commentsCount)} comments`}
+                        >
+                          <MessageCircle size={14} className="text-gray-400" />
+                          <span>{Math.max(0, commentsCount)}</span>
+                        </div>
+                      </div>
 
-          {/* Right: Simplified published date & Save button */}
-          <div className="flex items-center gap-2.5">
-            <span className="text-xs font-medium text-gray-400">
-              {formatSimplifiedDate(blog.createdAt)}
-            </span>
+                      {/* Right: Simplified published date & Save button */}
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-xs font-medium text-gray-400">
+                          {formatSimplifiedDate(blog.createdAt)}
+                        </span>
 
-            <button
-              type="button"
-              onClick={handleSave}
-              className={`group/save flex h-8.5 w-8.5 items-center justify-center rounded-xl transition-all duration-200 ${saved
-                ? "bg-blue-600 text-white shadow-sm ring-2 ring-blue-300 scale-105"
-                : "bg-gray-100 text-gray-500 hover:bg-blue-50 hover:text-blue-600"
-                }`}
-              title={saved ? "Saved (click to remove)" : "Save story"}
-              aria-label={saved ? "Saved story" : "Save story"}
-            >
-              <Bookmark
-                size={16}
-                className={`transition-transform duration-200 group-hover/save:scale-110 ${saved ? "fill-white text-white" : ""
-                  }`}
-              />
-            </button>
-          </div>
-        </div>
-      </Link>
-    </>
-  );
+                        <button
+                          type="button"
+                          onClick={handleSave}
+                          className={`group/save flex h-8.5 w-8.5 items-center justify-center rounded-xl transition-all duration-200 ${saved
+                            ? "bg-blue-600 text-white shadow-sm ring-2 ring-blue-300 scale-105"
+                            : "bg-gray-100 text-gray-500 hover:bg-blue-50 hover:text-blue-600"
+                            }`}
+                          title={saved ? "Saved (click to remove)" : "Save story"}
+                          aria-label={saved ? "Saved story" : "Save story"}
+                        >
+                          <Bookmark
+                            size={16}
+                            className={`transition-transform duration-200 group-hover/save:scale-110 ${saved ? "fill-white text-white" : ""
+                              }`}
+                          />
+                        </button>
+                      </div>
+                    </div>
+                  </Link>
+                </>
+                );
 }
 
-export default BlogCard;
+                export default BlogCard;

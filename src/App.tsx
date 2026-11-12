@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import ProtectedRoute from "./Components/ProtectedRoute";
 import AdminProtectedRoute from "./Components/AdminProtectedRoute";
+import NavigationGuard from "./Components/NavigationGuard";
 import Navbar from "./Components/Navbar";
 import Sidebar from "./Components/Sidebar";
 import CreateBlogModal from "./Components/CreateBlogModal";
@@ -31,6 +32,7 @@ function App() {
 
   return (
     <AdminAuthProvider>
+      <NavigationGuard />
       <SavedBlogsProvider>
         {/* Render Reader Navbar, Sidebar & Modal only on non-admin routes */}
         {!isAdminRoute && (

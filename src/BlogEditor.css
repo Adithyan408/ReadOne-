@@ -1,25 +1,48 @@
 .ProseMirror {
-  min-height: 400px;
-  padding: 20px;
+  min-height: 240px;
+  padding: 14px;
   outline: none;
+  word-break: break-word;
 }
 
 .ProseMirror h1 {
-  font-size: 2.25rem;
+  font-size: 1.625rem;
   font-weight: 700;
-  margin: 1rem 0;
+  margin: 0.75rem 0;
 }
 
 .ProseMirror h2 {
-  font-size: 1.8rem;
+  font-size: 1.375rem;
   font-weight: 700;
-  margin: 1rem 0;
+  margin: 0.75rem 0;
 }
 
 .ProseMirror h3 {
-  font-size: 1.5rem;
+  font-size: 1.15rem;
   font-weight: 600;
-  margin: 1rem 0;
+  margin: 0.75rem 0;
+}
+
+@media (min-width: 640px) {
+  .ProseMirror {
+    min-height: 400px;
+    padding: 20px;
+  }
+
+  .ProseMirror h1 {
+    font-size: 2.25rem;
+    margin: 1rem 0;
+  }
+
+  .ProseMirror h2 {
+    font-size: 1.8rem;
+    margin: 1rem 0;
+  }
+
+  .ProseMirror h3 {
+    font-size: 1.5rem;
+    margin: 1rem 0;
+  }
 }
 
 .ProseMirror ul {

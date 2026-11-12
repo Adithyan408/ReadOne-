@@ -43,13 +43,13 @@ function SavedBlogs() {
   });
 
   return (
-    <div className="min-h-screen bg-[#F8F6F2] pb-24">
+    <div className="relative min-h-screen overflow-x-clip bg-[#F8F6F2] pb-16 sm:pb-24">
       {/* Background Blur */}
-      <div className="pointer-events-none absolute left-1/2 top-0 -z-10 h-[450px] w-[500px] -translate-x-1/2 rounded-full bg-blue-100/40 blur-3xl" />
+      <div className="pointer-events-none absolute left-1/2 top-0 -z-10 h-[360px] w-[360px] sm:h-[450px] sm:w-[500px] -translate-x-1/2 rounded-full bg-blue-100/40 blur-3xl" />
 
-      <div className="mx-auto max-w-7xl px-4 pt-10 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 pt-6 sm:pt-10 sm:px-6 lg:px-8">
         {/* Header Banner */}
-        <div className="rounded-3xl border border-gray-200/80 bg-white/90 p-6 sm:p-10 shadow-sm backdrop-blur-sm">
+        <div className="rounded-2xl sm:rounded-3xl border border-gray-200/80 bg-white/90 p-5 sm:p-10 shadow-sm backdrop-blur-sm">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 shadow-xs">
@@ -85,7 +85,7 @@ function SavedBlogs() {
               ))}
             </div>
           ) : (
-            <div className="flex min-h-[360px] flex-col items-center justify-center rounded-3xl border border-dashed border-gray-300 bg-white/70 p-10 text-center">
+            <div className="flex min-h-[300px] sm:min-h-[360px] flex-col items-center justify-center rounded-2xl sm:rounded-3xl border border-dashed border-gray-300 bg-white/70 p-6 sm:p-10 text-center">
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-50 text-blue-600 mb-4">
                 <Bookmark size={28} />
               </div>

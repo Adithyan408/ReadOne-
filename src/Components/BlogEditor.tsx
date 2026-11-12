@@ -50,9 +50,8 @@ function ToolbarButton({
       onClick={onClick}
       disabled={disabled}
       title={title}
-      className={`p-2 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
-        active ? "bg-black text-white" : "hover:bg-gray-100 text-gray-700"
-      }`}
+      className={`p-2 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${active ? "bg-black text-white" : "hover:bg-gray-100 text-gray-700"
+        }`}
     >
       {children}
     </button>
@@ -87,7 +86,7 @@ function BlogEditor({ value, onChange }: Props) {
 
     editorProps: {
       attributes: {
-        class: "min-h-[400px] p-5 outline-none prose max-w-none",
+        class: "min-h-[240px] sm:min-h-[400px] p-3.5 sm:p-5 outline-none prose max-w-none",
       },
     },
 
