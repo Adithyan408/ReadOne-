@@ -1,6 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useAdminAuth } from "../../hooks/useAdminAuth";
+import { useLockBackNavigation } from "../../hooks/useLockBackNavigation";
+import {
+  setActiveRole,
+  setLastAdminPath,
+  setLastUserPath,
+} from "../../utils/rolePersistence";
 import {
   ShieldCheck,
   Lock,
@@ -22,6 +28,9 @@ export default function AdminLogin() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Prevent Back button from leaving Admin Login back onto the User side
+  useLockBackNavigation(true);
 
   // If already logged in, redirect immediately
   React.useEffect(() => {
@@ -48,6 +57,8 @@ export default function AdminLogin() {
         const from =
           (location.state as { from?: { pathname: string } })?.from?.pathname ||
           "/admin";
+        setActiveRole("admin");
+        setLastAdminPath(from);
         navigate(from, { replace: true });
       } else {
         setError(result.error || "Authentication failed.");
@@ -67,6 +78,10 @@ export default function AdminLogin() {
             <Link
               to="/"
               replace
+              onClick={() => {
+                setActiveRole("user");
+                setLastUserPath("/");
+              }}
               className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white/80 px-3.5 py-2 text-xs font-semibold text-gray-700 shadow-xs hover:bg-gray-100 hover:text-gray-900 transition backdrop-blur-sm"
             >
               <ArrowLeft size={14} />

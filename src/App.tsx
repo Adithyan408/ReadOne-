@@ -20,6 +20,7 @@ const SavedBlogs = lazy(() => import("./Pages/SavedBlogs"));
 // Admin Pages (Lazy Loaded)
 const AdminLayout = lazy(() => import("./Pages/Admin/AdminLayout"));
 const AdminUsers = lazy(() => import("./Pages/Admin/AdminUsers"));
+const AdminUserProfile = lazy(() => import("./Pages/Admin/AdminUserProfile"));
 const AdminNotifications = lazy(() => import("./Pages/Admin/AdminNotifications"));
 const AdminLogin = lazy(() => import("./Pages/Admin/AdminLogin"));
 
@@ -112,6 +113,8 @@ function App() {
             >
               <Route index element={<AdminUsers />} />
               <Route path="users" element={<AdminUsers />} />
+              <Route path="users/:userId" element={<AdminUserProfile />} />
+              <Route path="blogs/:id" element={<BlogDetails isAdminView />} />
               <Route path="notifications" element={<AdminNotifications />} />
             </Route>
 

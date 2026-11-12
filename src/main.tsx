@@ -4,13 +4,16 @@ import "./index.css";
 import App from "./App.tsx";
 import AuthProvider from "./context/AuthProvider.tsx";
 import { BrowserRouter } from "react-router-dom";
+import { enforceRoleOnDocumentLoad } from "./utils/rolePersistence.ts";
 
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <AuthProvider>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </AuthProvider>
-  </StrictMode>,
-);
+if (enforceRoleOnDocumentLoad()) {
+  createRoot(document.getElementById("root")!).render(
+    <StrictMode>
+      <AuthProvider>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </AuthProvider>
+    </StrictMode>,
+  );
+}

@@ -98,6 +98,7 @@ function SavedBlogs() {
               </p>
               <Link
                 to="/"
+                replace
                 className="mt-6 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-blue-700 transition"
               >
                 <Compass size={17} />

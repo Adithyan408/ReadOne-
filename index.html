@@ -5,6 +5,46 @@
     <link rel="icon" type="image/svg+xml" href="/gemini-svg.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Read-One</title>
+    <script>
+      (function () {
+        try {
+          var entries = performance.getEntriesByType("navigation");
+          var navType = entries && entries[0] && entries[0].type;
+          if (navType !== "back_forward") return;
+          var role = sessionStorage.getItem("readone_active_role");
+          var path = window.location.pathname;
+          var onAdmin = path === "/admin" || path.indexOf("/admin/") === 0;
+          if (role === "admin" && !onAdmin) {
+            document.documentElement.style.visibility = "hidden";
+            if (sessionStorage.getItem("readone_admin_authed")) {
+              sessionStorage.setItem("readone_role_bounce", "1");
+            }
+            var adminTarget =
+              sessionStorage.getItem("readone_last_admin_path") || "/admin";
+            if (
+              adminTarget !== "/admin" &&
+              adminTarget.indexOf("/admin/") !== 0
+            ) {
+              adminTarget = "/admin";
+            }
+            window.location.replace(adminTarget);
+          } else if (role === "user" && onAdmin) {
+            document.documentElement.style.visibility = "hidden";
+            var userTarget =
+              sessionStorage.getItem("readone_last_user_path") || "/";
+            if (
+              userTarget === "/admin" ||
+              userTarget.indexOf("/admin/") === 0
+            ) {
+              userTarget = "/";
+            }
+            window.location.replace(userTarget);
+          }
+        } catch (e) {
+          /* ignore */
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

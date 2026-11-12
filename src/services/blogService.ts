@@ -5,6 +5,7 @@ import {
   arrayRemove,
   addDoc,
   deleteDoc,
+  getDocs,
   serverTimestamp,
   onSnapshot,
   setDoc,
@@ -528,6 +529,27 @@ export const subscribeToComments = (
       }
     }
   };
+};
+
+/**
+ * Permanently delete a blog post along with its comments subcollection and local cache
+ */
+export const deleteBlog = async (blogId: string): Promise<void> => {
+  try {
+    const commentsSnap = await getDocs(collection(db, "blogs", blogId, "comments"));
+    await Promise.all(commentsSnap.docs.map((commentDoc) => deleteDoc(commentDoc.ref)));
+  } catch (err) {
+    console.warn("Notice cleaning blog comments subcollection:", err);
+  }
+
+  try {
+    localStorage.removeItem(`blog_comments_${blogId}`);
+    localStorage.removeItem(`deleted_comments_${blogId}`);
+  } catch {
+    // ignore
+  }
+
+  await deleteDoc(doc(db, "blogs", blogId));
 };
 
 /**

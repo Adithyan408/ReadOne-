@@ -1,8 +1,11 @@
 import {
   collection,
+  getDoc,
   getDocs,
   doc,
+  query,
   setDoc,
+  where,
 } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 
@@ -202,5 +205,83 @@ export const setUserStatus = async (
   } catch (err) {
     console.warn("Could not update status on Firestore users doc:", err);
   }
+};
+
+/**
+ * Fetch a single user's profile details by UID for the Admin user profile view
+ */
+export const fetchAdminUserById = async (uid: string): Promise<AdminUser | null> => {
+  const localStatusMap = getLocalStatusMap();
+  const seedMatch = SEED_USERS.find((u) => u.uid === uid);
+
+  let resolvedUser: AdminUser | null = seedMatch
+    ? { ...seedMatch, status: localStatusMap[uid] || seedMatch.status }
+    : null;
+
+  try {
+    const userSnap = await getDoc(doc(db, "users", uid));
+    if (userSnap.exists()) {
+      const data = userSnap.data();
+      const email =
+        data.email ||
+        resolvedUser?.email ||
+        `${uid.slice(0, 8)}@user.readone.io`;
+      const displayName =
+        data.displayName ||
+        data.name ||
+        resolvedUser?.displayName ||
+        email.split("@")[0] ||
+        "Community Member";
+
+      resolvedUser = {
+        uid,
+        displayName,
+        email,
+        status: localStatusMap[uid] || data.status || resolvedUser?.status || "active",
+        role: data.role || resolvedUser?.role || "Member",
+        createdAt: data.createdAt
+          ? typeof data.createdAt?.toDate === "function"
+            ? data.createdAt.toDate().toISOString()
+            : String(data.createdAt)
+          : resolvedUser?.createdAt ?? null,
+        blogsCount: data.blogsCount ?? resolvedUser?.blogsCount ?? 0,
+      };
+    }
+  } catch (err) {
+    console.warn("Notice fetching admin user doc:", err);
+  }
+
+  try {
+    const userBlogsSnap = await getDocs(
+      query(collection(db, "blogs"), where("userId", "==", uid))
+    );
+
+    if (!userBlogsSnap.empty) {
+      const firstBlogData = userBlogsSnap.docs[0].data();
+      if (resolvedUser) {
+        resolvedUser = {
+          ...resolvedUser,
+          blogsCount: userBlogsSnap.size,
+          displayName:
+            resolvedUser.displayName === "Community Member" && firstBlogData.author
+              ? firstBlogData.author
+              : resolvedUser.displayName,
+        };
+      } else {
+        resolvedUser = {
+          uid,
+          displayName: firstBlogData.author || `User ${uid.slice(0, 5)}`,
+          email: `${uid.slice(0, 8)}@user.readone.io`,
+          status: localStatusMap[uid] || "active",
+          role: "Author",
+          blogsCount: userBlogsSnap.size,
+        };
+      }
+    }
+  } catch (err) {
+    console.warn("Notice checking blogs for admin user:", err);
+  }
+
+  return resolvedUser;
 };
 
