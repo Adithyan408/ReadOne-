@@ -94,3 +94,62 @@
   float: left;
   height: 0;
 }
+
+/* ==========================================================================
+   Grammarly-Style Writing Assistant Wavy Underlines
+   ========================================================================== */
+
+.grammar-issue {
+  text-decoration-style: wavy !important;
+  text-decoration-thickness: 2px !important;
+  text-underline-offset: 3px !important;
+  cursor: pointer;
+  border-radius: 2px;
+  transition:
+    background-color 0.15s ease,
+    text-decoration-color 0.15s ease;
+}
+
+/* Spelling Errors (Red Wavy Underline) */
+.grammar-issue-spelling {
+  text-decoration-line: underline !important;
+  text-decoration-color: #ef4444 !important; /* red-500 */
+}
+
+.grammar-issue-spelling:hover,
+.grammar-issue-spelling.is-active {
+  background-color: rgba(239, 68, 68, 0.14);
+}
+
+/* Grammar Errors (Blue Wavy Underline) */
+.grammar-issue-grammar {
+  text-decoration-line: underline !important;
+  text-decoration-color: #3b82f6 !important; /* blue-500 */
+}
+
+.grammar-issue-grammar:hover,
+.grammar-issue-grammar.is-active {
+  background-color: rgba(59, 130, 246, 0.14);
+}
+
+/* Punctuation Errors (Yellow/Amber Wavy Underline) */
+.grammar-issue-punctuation {
+  text-decoration-line: underline !important;
+  text-decoration-color: #eab308 !important; /* yellow-500 */
+}
+
+.grammar-issue-punctuation:hover,
+.grammar-issue-punctuation.is-active {
+  background-color: rgba(234, 179, 8, 0.16);
+}
+
+/* Style & Clarity Suggestions (Purple Wavy Underline) */
+.grammar-issue-style {
+  text-decoration-line: underline !important;
+  text-decoration-color: #a855f7 !important; /* purple-500 */
+}
+
+.grammar-issue-style:hover,
+.grammar-issue-style.is-active {
+  background-color: rgba(168, 85, 247, 0.14);
+}
