@@ -1,6 +1,6 @@
 import { ArrowLeft, Bookmark, CalendarDays, Heart, MessageCircle, User } from "lucide-react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import type { Blog } from "../types/Blog";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase/firebase";
@@ -14,6 +14,15 @@ import {
   subscribeToComments,
   toggleBlogLike,
 } from "../services/blogService";
+import type {
+  ActiveBlogView,
+  BlogContext,
+  ParagraphAction,
+} from "../types/aiAssistant";
+import { cleanBlogContent } from "../services/blogAssistantService";
+import { AICompanion, type AICompanionHandle } from "../Components/AICompanion/AICompanion";
+import { ArticleViewBanner } from "../Components/AICompanion/ArticleViewBanner";
+import { ParagraphAIAction } from "../Components/AICompanion/ParagraphAIAction";
 
 type Props = {
   isAdminView?: boolean;
@@ -30,6 +39,54 @@ function BlogDetails({ isAdminView = false }: Props) {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [isLiking, setIsLiking] = useState(false);
+
+  // AI Assistant states
+  const articleContainerRef = useRef<HTMLElement>(null);
+  const companionRef = useRef<AICompanionHandle>(null);
+  const [isCompanionOpen, setIsCompanionOpen] = useState(false);
+
+  const [activeView, setActiveView] = useState<ActiveBlogView>({
+    type: "original",
+    title: "",
+    content: "",
+  });
+
+  const prevBlogIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (blog) {
+      if (prevBlogIdRef.current !== blog.id) {
+        prevBlogIdRef.current = blog.id;
+        setActiveView({
+          type: "original",
+          title: blog.title,
+          content: blog.content,
+        });
+      }
+    }
+  }, [blog]);
+
+  const handleTriggerParagraphAction = (selectedText: string, action: ParagraphAction) => {
+    setIsCompanionOpen(true);
+    companionRef.current?.executeParagraphAction(selectedText, action);
+  };
+
+  const blogContext: BlogContext | null = blog
+    ? {
+      id: blog.id,
+      title: blog.title,
+      description: blog.description || "",
+      content: cleanBlogContent(blog.content),
+      rawHtml: blog.content,
+      author: blog.author || "Unknown",
+      dateString: blog.createdAt
+        ? blog.createdAt.toDate().toLocaleDateString("en-US", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        })
+        : "Recently",
+    }
+    : null;
 
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -331,9 +388,22 @@ function BlogDetails({ isAdminView = false }: Props) {
         {/* Content */}
         <section className="mx-auto max-w-3xl px-4 pb-16 pt-6 sm:px-8 sm:pb-24 sm:pt-8">
           <div className="rounded-2xl sm:rounded-3xl border border-gray-200 bg-white/80 p-5 shadow-sm backdrop-blur-sm sm:p-10">
+            {/* View Banner if translated or simplified */}
+            <ArticleViewBanner
+              activeView={activeView}
+              onResetToOriginal={() =>
+                setActiveView({
+                  type: "original",
+                  title: blog.title,
+                  content: blog.content,
+                })
+              }
+              onOpenCompanion={() => setIsCompanionOpen(true)}
+            />
+
             {/* Title */}
             <h1 className="break-words text-2xl font-extrabold leading-tight text-gray-900 sm:text-4xl md:text-5xl">
-              {blog.title}
+              {activeView.title || blog.title}
             </h1>
 
             {/* Meta + Actions */}
@@ -386,8 +456,9 @@ function BlogDetails({ isAdminView = false }: Props) {
 
             {/* Blog Post Content */}
             <article
+              ref={articleContainerRef}
               className="prose prose-base sm:prose-lg mt-6 sm:mt-10 max-w-none break-words overflow-x-auto prose-headings:font-bold prose-headings:text-gray-900 prose-p:leading-relaxed prose-p:text-gray-700 prose-a:text-blue-600 prose-img:rounded-2xl"
-              dangerouslySetInnerHTML={{ __html: blog.content }}
+              dangerouslySetInnerHTML={{ __html: activeView.content || blog.content }}
             />
 
             {/* Engagement & Reaction Bar */}
@@ -469,6 +540,32 @@ function BlogDetails({ isAdminView = false }: Props) {
           </div>
         </section>
       </div>
+
+      {/* Paragraph AI Action Floating Menu */}
+      <ParagraphAIAction
+        containerRef={articleContainerRef}
+        onTriggerAction={handleTriggerParagraphAction}
+      />
+
+      {/* AI Reading Assistant Floating Companion */}
+      {blogContext && (
+        <AICompanion
+          ref={companionRef}
+          blog={blogContext}
+          activeView={activeView}
+          onApplyView={setActiveView}
+          onResetView={() =>
+            setActiveView({
+              type: "original",
+              title: blog.title,
+              content: blog.content,
+            })
+          }
+          isOpen={isCompanionOpen}
+          onToggleOpen={() => setIsCompanionOpen((prev) => !prev)}
+          onClose={() => setIsCompanionOpen(false)}
+        />
+      )}
     </>
   );
 }
